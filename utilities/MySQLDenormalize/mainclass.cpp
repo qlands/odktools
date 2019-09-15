@@ -150,6 +150,7 @@ void mainClass::processChilds(QDomDocument doc, QDomElement &parent, QString tab
 //    return records;
 //}
 
+// Check wether a field is multiselect. Returns true or false. If true it also returns teh multiselect table and the field holding the values
 bool mainClass::isFieldMultiSelect(QString table, QString field, QString &msel_table, QString &lookup_field)
 {
     msel_table = "";
@@ -195,6 +196,7 @@ bool mainClass::isFieldMultiSelect(QString table, QString field, QString &msel_t
     return result;
 }
 
+//Pulls the multiselect values from the multiselect tables into an string separated by space
 QStringList mainClass::getMultiSelectValuesAsArray(QList<TUUIDDef> dataList, QString msel_table, QString lookup_field, QDomNode current_node, QString field_name)
 {
     QStringList result;
@@ -225,6 +227,7 @@ QStringList mainClass::getMultiSelectValuesAsArray(QList<TUUIDDef> dataList, QSt
     return result;
 }
 
+//Pulls the multiselect values from the multiselect tables into an array
 QString mainClass::getMultiSelectValuesAsString(QList<TUUIDDef> dataList, QString msel_table, QString lookup_field, QDomNode current_node)
 {
     QStringList result;
@@ -258,6 +261,7 @@ QString mainClass::getMultiSelectValuesAsString(QList<TUUIDDef> dataList, QStrin
         return "";
 }
 
+//Pulls data from the memory repository by table and uuid. Properly pull the data of multiselect tables from the memory repository and separates them if asked
 QList<TfieldDef> mainClass::getDataByRowUUID4(QList<TUUIDDef> dataList, QString tableToSearch, QString UUIDToSearch, QDomNode current_node)
 {    
     QList<TfieldDef> records;
@@ -277,7 +281,7 @@ QList<TfieldDef> mainClass::getDataByRowUUID4(QList<TUUIDDef> dataList, QString 
                     QString msel_field;
                     if (isFieldMultiSelect(tableToSearch,field_name,msel_table,msel_field))
                     {
-                        log("Field: " + field_name + " in table: " + tableToSearch + " is multiselect with UUID: " + UUIDToSearch + " with field: " + msel_field);
+                        //log("Field: " + field_name + " in table: " + tableToSearch + " is multiselect with UUID: " + UUIDToSearch + " with field: " + msel_field);
                         if (!separateSelects)
                         {
                             records_found[rec].value = getMultiSelectValuesAsString(dataList, msel_table, msel_field, current_node);
@@ -355,6 +359,8 @@ QList<TfieldDef> mainClass::getDataByRowUUID4(QList<TUUIDDef> dataList, QString 
 //    return records;
 //}
 
+
+// Parse the mao file using JSON Boost. We use boost so the order of the fields in the resulting JSON is the same of the database. QT JSON does not do this
 void mainClass::parseMapFileWithBoost(QList <TUUIDDef> dataList, QDomNode node, pt::ptree &json, QString currentTable, pt::ptree &parent)
 {
     QDomElement elem;
@@ -678,7 +684,9 @@ void mainClass::processMapFile(mongocxx::collection collection, QString fileName
 
     //We here search in Mongo for the data of all UUDIDs and store the
     //data in an array called dataList. By doing this we only go once
-    //to mongo
+    //to mongo. However this make this tool really memory intensive.
+    //We need to find a ultra fast mechanism to do this make this tool
+    //usable with millions of records.
     QStringList UUIDs;
     getAllUUIDs(root,UUIDs);
     QString mongoQry;
