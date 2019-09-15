@@ -4702,12 +4702,6 @@ int main(int argc, char *argv[])
             if (QFile::exists(transFile))
                 QFile::remove(transFile);
 
-            if (QFile::exists(xmlCreateFile))
-                QFile::remove(xmlCreateFile);
-
-            if (QFile::exists(insertXML))
-                QFile::remove(insertXML);
-
             if (QFile::exists(drop))
                 QFile::remove(drop);
         }
