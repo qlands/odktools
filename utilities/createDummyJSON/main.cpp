@@ -191,8 +191,8 @@ int main(int argc, char *argv[])
     TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "1.1");
 
     TCLAP::ValueArg<std::string> inputArg("f","manifest","Input manifest XML file",true,"","string");
-    TCLAP::ValueArg<std::string> createArg("c","create","Input create XML file",true,"","string");
-    TCLAP::ValueArg<std::string> intertArg("i","insert","Input create XML file",true,"","string");
+    TCLAP::ValueArg<std::string> createArg("c","create","Input create XML file",false,"","string");
+    TCLAP::ValueArg<std::string> intertArg("i","insert","Input create XML file",false,"","string");
     TCLAP::ValueArg<std::string> outputArg("o","output","Output JSON file",false,"./output.json","string");
     TCLAP::ValueArg<std::string> arraysArg("a","arrays","Array sizes as defined as name:size,name:size",false,"","string");
     TCLAP::SwitchArg repoSwitch("r","repository","Generate keys for repository", cmd, false);
@@ -254,35 +254,44 @@ int main(int argc, char *argv[])
             }
             fileA.close();
 
-            //Openning and parsing the Create XML file
-            QFile fileCreate(xmlCreate);
-            if (!fileCreate.open(QIODevice::ReadOnly))
-            {
-                log("Cannot open create xml file");
-                return 1;
-            }
-            if (!xmlCreateDocument.setContent(&fileCreate))
-            {
-                log("Cannot parse create xml file");
-                fileCreate.close();
-                return 1;
-            }
-            fileCreate.close();
 
-            //Openning and parsing the Insert XML file
-            QFile fileInsert(xmlInsert);
-            if (!fileInsert.open(QIODevice::ReadOnly))
+            if (separate)
             {
-                log("Cannot open insert xml file");
-                return 1;
-            }
-            if (!xmlInsertDocument.setContent(&fileInsert))
-            {
-                log("Cannot parse insert xml file");
+                if ((xmlCreate == "") || (xmlInsert == ""))
+                {
+                    log("With separation you need to specify both create and insert xml files");
+                    return 1;
+                }
+                //Openning and parsing the Create XML file
+                QFile fileCreate(xmlCreate);
+                if (!fileCreate.open(QIODevice::ReadOnly))
+                {
+                    log("Cannot open create xml file");
+                    return 1;
+                }
+                if (!xmlCreateDocument.setContent(&fileCreate))
+                {
+                    log("Cannot parse create xml file");
+                    fileCreate.close();
+                    return 1;
+                }
+                fileCreate.close();
+
+                //Openning and parsing the Insert XML file
+                QFile fileInsert(xmlInsert);
+                if (!fileInsert.open(QIODevice::ReadOnly))
+                {
+                    log("Cannot open insert xml file");
+                    return 1;
+                }
+                if (!xmlInsertDocument.setContent(&fileInsert))
+                {
+                    log("Cannot parse insert xml file");
+                    fileInsert.close();
+                    return 1;
+                }
                 fileInsert.close();
-                return 1;
             }
-            fileInsert.close();
 
 
             QDomElement rootA = docA.documentElement();
