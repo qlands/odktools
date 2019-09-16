@@ -100,6 +100,9 @@ const char *mainClass::getSheetDescription(QString name)
 }
 
 // Parses a multiselect table and get the value in each row
+// This function must be thought a bit more because is not really efficient. Basically we parse with boost a whole multiselect table
+// pulling those records matching a set of keys. Though boost is very fast we are passing thrrough the whole table for each record
+// of a table
 QStringList mainClass::getMultiSelectValues(QString multiSelectTable, QString multiSelectField, QStringList keys, QStringList multiSelectKeys)
 {
     QDir currDir(tempDir);
@@ -458,7 +461,9 @@ void mainClass::loadTable(QDomNode table, QDomNode insertRoot)
                     aField.decSize = eField.attribute("decsize","").toInt();
                     if (eField.attribute("key","false") == "true")
                         aField.isKey = true;
-                    if (eField.attribute("isMultiSelect","false") == "true")
+                    // NOTE ON Rank. Rank is basically a multiselect with order and handled as a multiselect by ODK Tools. However
+                    // we cannot pull the data from the database because the records may not be stored in the same order the user placed them in Collect
+                    if ((eField.attribute("isMultiSelect","false") == "true") && (eField.attribute("odktype","") != "rank"))
                     {
                         aField.isMultiSelect = true;
                         aField.multiSelectTable = eField.attribute("multiSelectTable");
