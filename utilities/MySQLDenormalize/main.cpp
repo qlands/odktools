@@ -47,10 +47,11 @@ int main(int argc, char *argv[])
     TCLAP::ValueArg<std::string> passArg("p","password","Password to connect to MySQL",true,"","string");
     TCLAP::ValueArg<std::string> schemaArg("s","schema","Schema in MySQL",true,"","string");
     TCLAP::ValueArg<std::string> tableArg("t","maintable","Main table to denormalize from",true,"","string");
+    TCLAP::ValueArg<std::string> createArg("c","create","Create XML file",true,"","string");
     TCLAP::ValueArg<std::string> mapArg("m","mapdirectory","Directory containing the map XML files",true,"","string");
     TCLAP::ValueArg<std::string> outArg("o","output","Output directory to store the JSON result files",false,"CSV","string");
     TCLAP::ValueArg<std::string> tmpArg("T","tempdir","Temporary directory (./tmp by default)",false,"./tmp","string");
-    TCLAP::SwitchArg remoteSwitch("i","includeprotected","Include protected", cmd, false);
+    TCLAP::SwitchArg separateSwitch("S","separate","Separate multiselects into columns", cmd, false);
 
 
     cmd.add(hostArg);
@@ -62,12 +63,13 @@ int main(int argc, char *argv[])
     cmd.add(mapArg);
     cmd.add(outArg);
     cmd.add(tmpArg);
+    cmd.add(createArg);
     //Parsing the command lines
     cmd.parse( argc, argv );
 
     //Getting the variables from the command
-    bool includeProtected;
-    includeProtected = remoteSwitch.getValue();
+    bool separate;
+    separate = separateSwitch.getValue();
 
     QString host = QString::fromUtf8(hostArg.getValue().c_str());
     QString port = QString::fromUtf8(portArg.getValue().c_str());
@@ -78,9 +80,10 @@ int main(int argc, char *argv[])
     QString mapDir = QString::fromUtf8(mapArg.getValue().c_str());
     QString output = QString::fromUtf8(outArg.getValue().c_str());
     QString tmpDir = QString::fromUtf8(tmpArg.getValue().c_str());
+    QString createFile = QString::fromUtf8(createArg.getValue().c_str());
 
     mainClass *task = new mainClass(&app);
-    task->setParameters(host,port,user,pass,schema,table,mapDir,output,includeProtected,tmpDir);
+    task->setParameters(host,port,user,pass,schema,table,mapDir,output,separate,tmpDir,createFile);
     QObject::connect(task, SIGNAL(finished()), &app, SLOT(quit()));
     QTimer::singleShot(0, task, SLOT(run()));
     app.exec();

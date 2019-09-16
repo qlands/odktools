@@ -3634,6 +3634,7 @@ int processXLSX(QString inputFile, QString mainTable, QString mainField, QDir di
                             else
                                 aField.selectSource = "SEARCH";
                             aField.selectListName = listName;
+                            aField.odktype = variableType;
                             aField.type = "varchar";
                             aField.size = getMaxMSelValueLength(values);
                             aField.decSize = 0;
@@ -4701,12 +4702,6 @@ int main(int argc, char *argv[])
 
             if (QFile::exists(transFile))
                 QFile::remove(transFile);
-
-            if (QFile::exists(xmlCreateFile))
-                QFile::remove(xmlCreateFile);
-
-            if (QFile::exists(insertXML))
-                QFile::remove(insertXML);
 
             if (QFile::exists(drop))
                 QFile::remove(drop);
