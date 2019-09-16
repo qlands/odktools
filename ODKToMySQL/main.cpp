@@ -3634,6 +3634,7 @@ int processXLSX(QString inputFile, QString mainTable, QString mainField, QDir di
                             else
                                 aField.selectSource = "SEARCH";
                             aField.selectListName = listName;
+                            aField.odktype = variableType;
                             aField.type = "varchar";
                             aField.size = getMaxMSelValueLength(values);
                             aField.decSize = 0;
