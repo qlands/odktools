@@ -135,7 +135,7 @@ void parseManifest(QDomNode node, pt::ptree &json)
         {
             if ((xmlCode != "NONE") && (xmlCode != "dummy") && (xmlCode != "rowuuid"))
             {
-                if (node.toElement().attribute("isMultiSelect","false") == "true")
+                if ((node.toElement().attribute("isMultiSelect","false") == "true") && (node.toElement().attribute("multiSelectTable") != ""))
                 {
                     if (separate)
                     {
