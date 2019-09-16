@@ -109,51 +109,53 @@ QStringList mainClass::getMultiSelectValues(QString multiSelectTable, QString mu
     QStringList result;
     QString sourceFile;
     sourceFile = currDir.absolutePath() + currDir.separator() + multiSelectTable + ".xml";
-
-    pt::ptree tree;
-    pt::read_xml(sourceFile.toUtf8().constData(), tree);
-    BOOST_FOREACH(boost::property_tree::ptree::value_type const&db, tree.get_child("mysqldump") )
+    if (QFile::exists(sourceFile))
     {
-        const boost::property_tree::ptree & aDatabase = db.second; // value (or a subnode)
-        BOOST_FOREACH(boost::property_tree::ptree::value_type const&ctable, aDatabase.get_child("") )
+        pt::ptree tree;
+        pt::read_xml(sourceFile.toUtf8().constData(), tree);
+        BOOST_FOREACH(boost::property_tree::ptree::value_type const&db, tree.get_child("mysqldump") )
         {
-            const std::string & key = ctable.first.data();
-            if (key == "table_data")
+            const boost::property_tree::ptree & aDatabase = db.second; // value (or a subnode)
+            BOOST_FOREACH(boost::property_tree::ptree::value_type const&ctable, aDatabase.get_child("") )
             {
-                const boost::property_tree::ptree & aTable = ctable.second;
-                BOOST_FOREACH(boost::property_tree::ptree::value_type const&row, aTable.get_child("") )
+                const std::string & key = ctable.first.data();
+                if (key == "table_data")
                 {
-                    QStringList Rowkeys;
-                    QString rowLookUpValue;
-                    const boost::property_tree::ptree & aRow = row.second;
-                    BOOST_FOREACH(boost::property_tree::ptree::value_type const&field, aRow.get_child("") )
+                    const boost::property_tree::ptree & aTable = ctable.second;
+                    BOOST_FOREACH(boost::property_tree::ptree::value_type const&row, aTable.get_child("") )
                     {
-                        const std::string & fkey = field.first.data();
-                        if (fkey == "field")
+                        QStringList Rowkeys;
+                        QString rowLookUpValue;
+                        const boost::property_tree::ptree & aRow = row.second;
+                        BOOST_FOREACH(boost::property_tree::ptree::value_type const&field, aRow.get_child("") )
                         {
-                            const boost::property_tree::ptree & aField = field.second;
-                            std::string fname = aField.get<std::string>("<xmlattr>.name");
-                            std::string fvalue = aField.data();
-                            QString fieldName = QString::fromStdString(fname);
-                            QString fieldValue = QString::fromStdString(fvalue);
-                            if (multiSelectKeys.indexOf(fieldName) >= 0)
+                            const std::string & fkey = field.first.data();
+                            if (fkey == "field")
                             {
-                                Rowkeys.append(fieldName + "~@~" + fieldValue);
-                            }
-                            if (multiSelectField == fieldName)
-                            {
-                                rowLookUpValue = fieldValue;
+                                const boost::property_tree::ptree & aField = field.second;
+                                std::string fname = aField.get<std::string>("<xmlattr>.name");
+                                std::string fvalue = aField.data();
+                                QString fieldName = QString::fromStdString(fname);
+                                QString fieldValue = QString::fromStdString(fvalue);
+                                if (multiSelectKeys.indexOf(fieldName) >= 0)
+                                {
+                                    Rowkeys.append(fieldName + "~@~" + fieldValue);
+                                }
+                                if (multiSelectField == fieldName)
+                                {
+                                    rowLookUpValue = fieldValue;
+                                }
                             }
                         }
+                        bool notFound = false;
+                        for (int pos = 0; pos < Rowkeys.count(); pos++)
+                        {
+                            if (keys.indexOf(Rowkeys[pos]) < 0)
+                                notFound = true;
+                        }
+                        if (notFound == false)
+                            result.append(rowLookUpValue);
                     }
-                    bool notFound = false;
-                    for (int pos = 0; pos < Rowkeys.count(); pos++)
-                    {
-                        if (keys.indexOf(Rowkeys[pos]) < 0)
-                            notFound = true;
-                    }
-                    if (notFound == false)
-                        result.append(rowLookUpValue);
                 }
             }
         }
@@ -235,7 +237,7 @@ int mainClass::parseDataToXLSX()
                                             inserted = true;
                                             if (rowNo == 1)
                                             {
-                                                if (isMultiSelect && separateSelects)
+                                                if ((isMultiSelect) && (separateSelects) && (multiSelectTable != ""))
                                                 {
                                                     int mselColno = colNo;
                                                     for (int opt = 0; opt < options.count(); opt++)
@@ -248,7 +250,7 @@ int mainClass::parseDataToXLSX()
                                                 else
                                                     worksheet_write_string(worksheet,0, colNo, fieldName.toUtf8().constData(), NULL);
                                             }
-                                            if (isMultiSelect && separateSelects)
+                                            if ((isMultiSelect) && (separateSelects) && (multiSelectTable != ""))
                                             {
                                                 QList <ToptionDef> lst_options;
                                                 for (int opt = 0; opt < options.count(); opt++)
@@ -289,9 +291,14 @@ int mainClass::parseDataToXLSX()
 //                                                       for (int tmp = 0; tmp < keys.count(); tmp++)
 //                                                           log(keys[pos]);
 //                                                   }
-                                                   QStringList mselValues = getMultiSelectValues(multiSelectTable,multiSelectField,keys,multiSelectKeys);
-                                                   fieldValue = mselValues.join(" ");
-                                                   worksheet_write_string(worksheet,rowNo, colNo, fieldValue.toUtf8().constData(), NULL);
+                                                   if (multiSelectTable != "")
+                                                   {
+                                                        QStringList mselValues = getMultiSelectValues(multiSelectTable,multiSelectField,keys,multiSelectKeys);
+                                                        fieldValue = mselValues.join(" ");
+                                                        worksheet_write_string(worksheet,rowNo, colNo, fieldValue.toUtf8().constData(), NULL);
+                                                   }
+                                                   else
+                                                       worksheet_write_string(worksheet,rowNo, colNo, fieldValue.toUtf8().constData(), NULL);
                                                }
                                             }
                                             if (increase_colno)
