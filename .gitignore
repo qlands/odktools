@@ -55,6 +55,7 @@ proguard.cfg
 *.pro.user*
 *.pluginspec
 *.directory
+*.qtc_clangd/
 src/app/Info.plist
 src/plugins/coreplugin/ide_version.h
 share/qtcreator/externaltools
