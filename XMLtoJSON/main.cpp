@@ -64,8 +64,8 @@ pt::ptree processNodeBoost(QStringList repeatArray,bool group,QDomNode node,pt::
             parent= start.parentNode();
             while (!parent.isNull())
             {
-                if ((parent.toElement().tagName() != "") && (mainTag != parent.toElement().tagName()))
-                    tagsArray.prepend(parent.toElement().tagName()); //Preend them so we have the correct order
+                if ((parent.toElement().tagName().replace(".","_") != "") && (mainTag != parent.toElement().tagName().replace(".","_")))
+                    tagsArray.prepend(parent.toElement().tagName().replace(".","_")); //Preend them so we have the correct order
                 parent = parent.parentNode();
             }
         }
@@ -78,9 +78,9 @@ pt::ptree processNodeBoost(QStringList repeatArray,bool group,QDomNode node,pt::
                 //Forms the key name using / as separator
                 QString varName;
                 if (tagsArray.length() >= 1)
-                    varName = tagsArray.join("/") + "/" + start.toElement().tagName();
+                    varName = tagsArray.join("/") + "/" + start.toElement().tagName().replace(".","_");
                 else
-                    varName = start.toElement().tagName();
+                    varName = start.toElement().tagName().replace(".","_");
                 //If we are not processing a group then add the single var otherwise create an array for the group
                 if (group == false)
                     json.put(varName.toStdString(),start.firstChild().nodeValue().toStdString()); //json[varName] = start.firstChild().nodeValue();
@@ -97,11 +97,11 @@ pt::ptree processNodeBoost(QStringList repeatArray,bool group,QDomNode node,pt::
             //This node has child. So is a group or a repeat
             QString varName;
             if (tagsArray.length() >= 1)
-                varName = tagsArray.join("/") + "/" + start.toElement().tagName();
+                varName = tagsArray.join("/") + "/" + start.toElement().tagName().replace(".","_");
             else
-                varName = start.toElement().tagName();
+                varName = start.toElement().tagName().replace(".","_");
 
-            if (repeatArray.indexOf(start.toElement().tagName()) >= 0)
+            if (repeatArray.indexOf(start.toElement().tagName().replace(".","_")) >= 0)
             {
                 //If its a repeat then enter into its content and store it in repContent
                 pt::ptree repContent;//QJsonObject repContent;
@@ -158,102 +158,102 @@ pt::ptree processNodeBoost(QStringList repeatArray,bool group,QDomNode node,pt::
     return empty;
 }
 
-QJsonArray processNode(QStringList repeatArray,bool group,QDomNode node,QJsonObject &json)
-{
-    QDomNode start;
-    start = node.firstChild();
-    QStringList tagsArray;
-    QJsonArray groupArray;
+//QJsonArray processNode(QStringList repeatArray,bool group,QDomNode node,QJsonObject &json)
+//{
+//    QDomNode start;
+//    start = node.firstChild();
+//    QStringList tagsArray;
+//    QJsonArray groupArray;
 
-    while (!start.isNull())
-    {
-        //This will get the parent tags of the item to them form the name no the key in the JSON
-        if (tagsArray.length() == 0)
-        {
-            QDomNode parent;
-            parent= start.parentNode();
-            while (!parent.isNull())
-            {
-                if ((parent.toElement().tagName() != "") && (mainTag != parent.toElement().tagName()))
-                    tagsArray.prepend(parent.toElement().tagName()); //Preend them so we have the correct order
-                parent = parent.parentNode();
-            }
-        }
+//    while (!start.isNull())
+//    {
+//        //This will get the parent tags of the item to them form the name no the key in the JSON
+//        if (tagsArray.length() == 0)
+//        {
+//            QDomNode parent;
+//            parent= start.parentNode();
+//            while (!parent.isNull())
+//            {
+//                if ((parent.toElement().tagName().replace(".","_") != "") && (mainTag != parent.toElement().tagName().replace(".","_")))
+//                    tagsArray.prepend(parent.toElement().tagName().replace(".","_")); //Preend them so we have the correct order
+//                parent = parent.parentNode();
+//            }
+//        }
 
-        //If this tag does not have children (is not a repeat or a group)
-        if (start.firstChildElement().isNull() == true)
-        {
-            if (!start.firstChild().nodeValue().isNull())
-            {
-                //Forms the key name using / as separator
-                QString varName;
-                if (tagsArray.length() >= 1)
-                    varName = tagsArray.join("/") + "/" + start.toElement().tagName();
-                else
-                    varName = start.toElement().tagName();
-                //If we are not processing a group then add the single var otherwise create an array for the group
-                if (group == false)
-                    json[varName] = start.firstChild().nodeValue();
-                else
-                {
-                    QJsonObject ajvar;
-                    ajvar[varName] = start.firstChild().nodeValue();
-                    groupArray.append(ajvar);
-                }
-            }
-        }
-        else
-        {            
-            //This node has child. So is a group or a repeat
-            QString varName;
-            if (tagsArray.length() >= 1)
-                varName = tagsArray.join("/") + "/" + start.toElement().tagName();
-            else
-                varName = start.toElement().tagName();
+//        //If this tag does not have children (is not a repeat or a group)
+//        if (start.firstChildElement().isNull() == true)
+//        {
+//            if (!start.firstChild().nodeValue().isNull())
+//            {
+//                //Forms the key name using / as separator
+//                QString varName;
+//                if (tagsArray.length() >= 1)
+//                    varName = tagsArray.join("/") + "/" + start.toElement().tagName().replace(".","_");
+//                else
+//                    varName = start.toElement().tagName().replace(".","_");
+//                //If we are not processing a group then add the single var otherwise create an array for the group
+//                if (group == false)
+//                    json[varName] = start.firstChild().nodeValue();
+//                else
+//                {
+//                    QJsonObject ajvar;
+//                    ajvar[varName] = start.firstChild().nodeValue();
+//                    groupArray.append(ajvar);
+//                }
+//            }
+//        }
+//        else
+//        {
+//            //This node has child. So is a group or a repeat
+//            QString varName;
+//            if (tagsArray.length() >= 1)
+//                varName = tagsArray.join("/") + "/" + start.toElement().tagName().replace(".","_");
+//            else
+//                varName = start.toElement().tagName().replace(".","_");
 
-            if (repeatArray.indexOf(start.toElement().tagName()) >= 0)
-            {
-                //If its a repeat then enter into its content and store it in repContent
-                QJsonObject repContent;
-                processNode(repeatArray,false,start,repContent);
-                //If the repeat tag is not in the JSON then create the key as an array and append the content
-                //otherwise then just append the content
-                if (json[varName].isNull())
-                {
-                    QJsonArray repArray;
-                    repArray.append(repContent);
-                    json[varName] = repArray;
-                }
-                else
-                {
-                    QJsonArray repArray;
-                    repArray = json[varName].toArray();
-                    repArray.append(repContent);
-                    json[varName] = repArray;
-                }
-            }
-            else
-            {
-                //If its a group then we need to extract the elements recursively because they don't generate an array
-                QJsonArray elems;
-                elems = processNode(repeatArray,true,start,json);                
-                for (int pos = 0; pos <= elems.count()-1;pos++)
-                {
-                    QString key;
-                    QStringList keys;
-                    keys = elems[pos].toObject().keys();                    
-                    key = keys[0];                    
-                    json[key] = elems[pos].toObject().value(key).toString();                    
-                }
-            }
-        }
-        start = start.nextSibling();
-    }
-    if (group)
-        return groupArray;
+//            if (repeatArray.indexOf(start.toElement().tagName().replace(".","_")) >= 0)
+//            {
+//                //If its a repeat then enter into its content and store it in repContent
+//                QJsonObject repContent;
+//                processNode(repeatArray,false,start,repContent);
+//                //If the repeat tag is not in the JSON then create the key as an array and append the content
+//                //otherwise then just append the content
+//                if (json[varName].isNull())
+//                {
+//                    QJsonArray repArray;
+//                    repArray.append(repContent);
+//                    json[varName] = repArray;
+//                }
+//                else
+//                {
+//                    QJsonArray repArray;
+//                    repArray = json[varName].toArray();
+//                    repArray.append(repContent);
+//                    json[varName] = repArray;
+//                }
+//            }
+//            else
+//            {
+//                //If its a group then we need to extract the elements recursively because they don't generate an array
+//                QJsonArray elems;
+//                elems = processNode(repeatArray,true,start,json);
+//                for (int pos = 0; pos <= elems.count()-1;pos++)
+//                {
+//                    QString key;
+//                    QStringList keys;
+//                    keys = elems[pos].toObject().keys();
+//                    key = keys[0];
+//                    json[key] = elems[pos].toObject().value(key).toString();
+//                }
+//            }
+//        }
+//        start = start.nextSibling();
+//    }
+//    if (group)
+//        return groupArray;
 
-    return QJsonArray();
-}
+//    return QJsonArray();
+//}
 
 int main(int argc, char *argv[])
 {
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
     }
     inputFile.close();
     QDomElement root = inputXML.documentElement();
-    mainTag = root.tagName();
+    mainTag = root.tagName().replace(".","_");
     //QString empty;
 
 //    QJsonObject JSONRoot;

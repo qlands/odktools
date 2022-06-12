@@ -39,6 +39,7 @@ License along with ODKToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl-3.
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSet>
+#include <QRegularExpression>
 
 bool debug;
 QString command;
@@ -2309,15 +2310,16 @@ void addToStack(QString groupOrRepeat)
 QString fixField(QString source)
 {
     QString res;
+    source = source.trimmed().simplified().toLower();
     res = source;
-    res = res.replace("'","");
-    res = res.replace('\"',"");
-    res = res.replace(";","");
-    res = res.replace("-","_");
-    res = res.replace(",","");
-    res = res.replace(" ","");
-    res = res.replace(".","_");
-    isFieldValid(res);
+    QRegularExpression re("[^a-zA-Z0-9\\_]");
+    res = res.replace(re,"");
+    res = res.trimmed().simplified().toLower();
+    if (res != source)
+    {
+        log("The form has variables with invalid charaters. Only _ is valid");
+        exit(20);
+    }
     return res;
 }
 
