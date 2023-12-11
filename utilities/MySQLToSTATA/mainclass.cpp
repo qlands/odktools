@@ -514,6 +514,7 @@ int mainClass::generateXLSX()
             do_out << "/* This script will generate a STATA " + tables[pos].name + ".dta file from a " + tables[pos].name + ".raw tab delimited file*/\n";
             do_out << "/* You only need to run this once.*/\n";
             do_out << "/* Change c:\\my_working_dir to the directory holding this file.*/\n";
+            do_out << "clear\n";
             do_out << "cd \"c:\\my_working_dir\"\n";
             do_out << "import delimited \"" + tables[pos].name + ".raw\", delimiter(tab) varnames(1) encoding(UTF-8) stringcols(_all)\n";
 
@@ -535,7 +536,24 @@ int mainClass::generateXLSX()
                 if (line_data != "")
                     do_out << line_data;
             }
-            do_out << "save " + tables[pos].name + "\n\n";
+            do_out << "save " + tables[pos].name + "\n";
+
+            dofile.close();
+        }
+
+        // Generate labels do files
+        for (int pos = 0; pos < tables.count(); pos++)
+        {
+            QString do_file = finalDir.absolutePath() + currDir.separator() + tables[pos].name + "_labels.do";
+
+            QFile dofile(do_file);
+            if (!dofile.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                log("Cannot open DO labels file for writing");
+                return 1;
+            }
+            QTextStream do_out(&dofile);
+
             for (int fld=0; fld < tables[pos].fields.count(); fld++)
             {
                 do_out << "label variable " + tables[pos].fields[fld].name + " \"" + tables[pos].fields[fld].desc.replace("\"","") + "\"\n";
@@ -560,7 +578,7 @@ int mainClass::generateXLSX()
         QFile dofile_lbl(do_file_lbl);
         if (!dofile_lbl.open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            log("Cannot open DO file for writing");
+            log("Cannot open DO lookup file for writing");
             return 1;
         }
         QTextStream do_out_lbl(&dofile_lbl);
