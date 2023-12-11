@@ -3,7 +3,6 @@ TEMPLATE = subdirs
 CONFIG += debug
 
 SUBDIRS = createFromXML \
-    DCFToODK \
     insertFromXML \
     MySQLDenormalize \
     MySQLToXLSX \

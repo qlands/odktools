@@ -1,7 +1,7 @@
 QT -= gui
-QT += core xml
+QT += core xml sql
 
-CONFIG += console
+CONFIG += c++11 console
 CONFIG -= app_bundle
 TARGET = mysqltostata
 
@@ -19,7 +19,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 unix:INCLUDEPATH += ../../3rdparty
 
 SOURCES += main.cpp \
+    jsonworker.cpp \
+    listmutex.cpp \
     mainclass.cpp
 
 HEADERS += \
+    jsonworker.h \
+    listmutex.h \
     mainclass.h
