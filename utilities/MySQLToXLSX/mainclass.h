@@ -70,6 +70,13 @@ struct taskItem
 };
 typedef taskItem TtaskItem;
 
+struct sheetItem
+{
+    QString tableName;
+    QString sheetName;
+};
+typedef sheetItem TsheetItem;
+
 class mainClass : public QObject
 {
     Q_OBJECT
@@ -104,7 +111,7 @@ private:
     QList<TtableDef> mainTables;
     QList<TtableDef> lookupTables;
     QStringList tableNames;
-    QStringList sheets;
+    QList<TsheetItem> sheets;
     QStringList finalCSVS;
     int num_workers;
     int letterIndex;

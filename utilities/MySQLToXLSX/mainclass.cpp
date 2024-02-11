@@ -437,7 +437,10 @@ int mainClass::generateXLSX()
         {
             for (int pos = 0; pos <= tables.count()-1; pos++)
             {
-                sheets.append(getSheetDescription(tables[pos].desc));
+                TsheetItem a_sheet;
+                a_sheet.tableName = tables[pos].desc;
+                a_sheet.sheetName = getSheetDescription(tables[pos].desc);
+                sheets.append(a_sheet);
                 linked_tables.clear();
                 fields.clear();
                 fields_for_select.clear();
@@ -927,7 +930,10 @@ int mainClass::generateXLSX()
             QDir finalDir(tempDir);
             for (int pos = 0; pos < tables.count(); pos++)
             {
-                sheets.append(getSheetDescription(tables[pos].desc));
+                TsheetItem a_sheet;
+                a_sheet.tableName = tables[pos].desc;
+                a_sheet.sheetName = getSheetDescription(tables[pos].desc);
+                sheets.append(a_sheet);
 
                 TtaskItem a_merge_task;
                 a_merge_task.task_type = 4;
@@ -996,6 +1002,48 @@ int mainClass::generateXLSX()
 
         if (result == 0)
         {
+            //Create an XML file to report the name of each table and its sheet
+            //We can use this later on to open the excel file and apply formats
+            //to colunmns
+            QString sheetFile = outputFile + ".xml";
+            QDomDocument XMLSheetStructure;
+            XMLSheetStructure = QDomDocument("XMLSheetFile");
+            QDomElement XMLRoot;
+            XMLRoot = XMLSheetStructure.createElement("XMLSheetFile");
+            XMLSheetStructure.appendChild(XMLRoot);
+
+            QDomElement XMLSheets;
+            XMLSheets = XMLSheetStructure.createElement("sheets");
+            XMLRoot.appendChild(XMLSheets);
+
+
+            for (int pos = 0; pos < sheets.count(); pos++)
+            {
+                QDomElement XMLSheet;
+                XMLSheet = XMLSheetStructure.createElement("sheet");
+                XMLSheet.setAttribute("name", sheets[pos].sheetName);
+                XMLSheet.setAttribute("table", sheets[pos].tableName);
+                XMLSheets.appendChild(XMLSheet);
+            }
+
+            if (QFile::exists(sheetFile))
+                QFile::remove(sheetFile);
+            QFile XMLSheetFile(sheetFile);
+            if (XMLSheetFile.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                QTextStream outXMLSheet(&XMLSheetFile);
+                outXMLSheet.setCodec("UTF-8");
+                XMLSheetStructure.save(outXMLSheet,1,QDomNode::EncodingFromTextStream);
+                XMLSheetFile.close();
+            }
+            else
+            {
+                log("Error: Cannot create sheet file file");
+                returnCode = 1;
+                return returnCode;
+            }
+
+            // Convert the CSVS into one Excel file
             QProcess *mySQLDumpProcess = new QProcess();
             QStringList arguments;
 
@@ -1004,7 +1052,7 @@ int mainClass::generateXLSX()
                 if (QFile::exists(finalCSVS[pos]))
                 {
                     arguments.append("-s");
-                    arguments.append(sheets[pos]);
+                    arguments.append(sheets[pos].sheetName);
                 }
             }
             arguments.append("--output");
