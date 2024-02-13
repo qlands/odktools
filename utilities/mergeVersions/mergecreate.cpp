@@ -468,7 +468,7 @@ void mergeCreate::addTableToSDiff(QDomNode table, bool lookUp)
             {
                 if (field.attribute("type","") != "text")
                 {
-                    if (field.attribute("type","") != "int(9)"  && field.attribute("type","") != "decimal(17,3)")
+                    if (field.attribute("type","") != "int(9)" && field.attribute("type","") != "decimal(17,3)" && field.attribute("type","") != "date" && field.attribute("type","") != "datetime")
                         sql = sql + " " + field.attribute("type","") + " (" + field.attribute("size","0") + ")";
                     else
                         sql = sql + " " + field.attribute("type","");
@@ -478,7 +478,7 @@ void mergeCreate::addTableToSDiff(QDomNode table, bool lookUp)
             }
             if (field.attribute("key","") == "true")
             {
-                sql = sql + "NOT NULL COMMENT \"" + field.attribute("desc","Without description") + "\",\n";
+                sql = sql + " NOT NULL COMMENT \"" + field.attribute("desc","Without description") + "\",\n";
                 keys.append(field.attribute("name",""));
             }
             else
