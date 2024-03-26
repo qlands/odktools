@@ -67,6 +67,7 @@ QStringList extraColumnsInSurvey;
 QStringList extraColumnsInOptions;
 QStringList ODKLanguages;
 bool hasSelects;
+bool hasOnlyExternalSelects;
 QStringList extra_survey_columns;
 QStringList extra_choices_columns;
 QStringList extra_invalid_columns;
@@ -4528,6 +4529,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     propertyTypes = getExtraColumnsTypes(fieldObject.value("choices").toArray(), propertyList);
                     values.append(getSelectValues(fixField(variableName, true),fieldObject.value("choices").toArray(),selectHasOrOther(variableType),propertyList));
                     select_type = 1;
+                    hasOnlyExternalSelects = false;
                 }
                 else
                 {
@@ -6459,7 +6461,7 @@ int processJSON(QString inputFile, QString mainTable, QString mainField, QDir di
         parseJSONObject(firstObject, mainTable, mainField, dir, database);       
 
         getLanguages(firstObject, ODKLanguages, num_labels);
-        if (num_labels == 0 && hasSelects)
+        if (num_labels == 0 && hasSelects && !hasOnlyExternalSelects)
             exit(8);
 
         if (duplicatedTables.count() > 0)
@@ -6842,6 +6844,7 @@ int main(int argc, char *argv[])
     //Parsing the command lines
     cmd.parse( argc, argv );
     hasSelects = false;
+    hasOnlyExternalSelects = true;
     //Get the support files
     std::vector<std::string> v = suppFiles.getValue();
     for (int i = 0; static_cast<unsigned int>(i) < v.size(); i++)
