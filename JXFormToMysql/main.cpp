@@ -243,8 +243,15 @@ struct duplicatedSelectValue
     QString variableName;
     QString selectValue;
 };
+struct invalidSelectValue
+{
+    QString variableName;
+    QString selectValue;
+};
 typedef duplicatedSelectValue TduplicatedSelectValue;
+typedef invalidSelectValue TinvalidSelectValue;
 QList<TduplicatedSelectValue> duplicatedSelectValues;
+QList<TinvalidSelectValue> invalidSelectValues;
 
 struct duplicatedField
 {
@@ -3148,8 +3155,21 @@ QList <TlngLkpDesc > getLabels(QJsonValue labelValue)
     return labels;
 }
 
-bool checkSelectValue(QString variableName, QList<TlkpValue> values, QString value, bool report=true)
+bool checkSelectValue(QString variableName, QList<TlkpValue> values, QString value, bool report=true, bool multiSelect = false)
 {
+    if (multiSelect)
+    {
+        if (value.indexOf(" ") >= 0)
+        {
+            if (report)
+            {
+                TinvalidSelectValue invalid;
+                invalid.variableName = variableName;
+                invalid.selectValue = value.toLower().trimmed();
+                invalidSelectValues.append(invalid);
+            }
+        }
+    }
     for (int idx = 0; idx < values.count(); idx++)
     {
         if (values[idx].code.toLower().trimmed() == value.toLower().trimmed())
@@ -3170,8 +3190,11 @@ bool checkSelectValue(QString variableName, QList<TlkpValue> values, QString val
 
 // This return the values of a select that uses an external xml file.
 // e.g., "select one from file a_file.xml" and "select multiple from file a_file.xml"
-QList<TlkpValue> getSelectValuesFromGeoJSON(QString variableName, QString fileName, int &result, QDir dir, QString codeColumn, QString descColumn, QStringList &propertyList, QStringList &propertyTypes)
+QList<TlkpValue> getSelectValuesFromGeoJSON(QString variableName, QString variableType, QString fileName, int &result, QDir dir, QString codeColumn, QString descColumn, QStringList &propertyList, QStringList &propertyTypes)
 {
+    bool multiselect = false;
+    if (isSelect(variableType) == 3)
+        multiselect = true;
     QList<TlkpValue> res;
     result = 0;
     QString jsonFile;
@@ -3276,7 +3299,7 @@ QList<TlkpValue> getSelectValuesFromGeoJSON(QString variableName, QString fileNa
                                     coor_column.column_name = "coordinates";
                                     coor_column.column_value = coordinates_string;
                                     value.other_values.append(coor_column);
-                                    checkSelectValue(variableName,res,value.code);
+                                    checkSelectValue(variableName,res,value.code,true,multiselect);
                                     res.append(value);
                                 }
                                 else
@@ -3380,9 +3403,13 @@ QList<TlkpValue> getSelectValuesFromGeoJSON(QString variableName, QString fileNa
 
 // This return the values of a select that uses an external xml file.
 // e.g., "select one from file a_file.xml" and "select multiple from file a_file.xml"
-QList<TlkpValue> getSelectValuesFromXML(QString variableName, QString fileName, bool hasOrOther, int &result, QDir dir, QString codeColumn="name", QString descColumn="label")
+QList<TlkpValue> getSelectValuesFromXML(QString variableName, QString variableType, QString fileName, bool hasOrOther, int &result, QDir dir, QString codeColumn="name", QString descColumn="label")
 {
-    QList<TlkpValue> res;    
+    bool multiSelect = false;
+    if (isSelect(variableType) == 3)
+        multiSelect = true;
+
+    QList<TlkpValue> res;
     QStringList descColumns;
     result = 0;
     descColumns << descColumn;
@@ -3473,7 +3500,7 @@ QList<TlkpValue> getSelectValuesFromXML(QString variableName, QString fileName, 
                             }
                         }
                     }
-                    checkSelectValue(variableName,res,value.code);
+                    checkSelectValue(variableName,res,value.code,true,multiSelect);
                     res.append(value);
                 }
                 else
@@ -3489,7 +3516,7 @@ QList<TlkpValue> getSelectValuesFromXML(QString variableName, QString fileName, 
             }
             if (hasOrOther)
             {
-                bool duplicated = checkSelectValue(variableName,res,"other",false);
+                bool duplicated = checkSelectValue(variableName,res,"other",false,multiSelect);
                 if (!duplicated)
                 {
                     TlkpValue value;
@@ -3534,8 +3561,13 @@ QList<TlkpValue> getSelectValuesFromXML(QString variableName, QString fileName, 
 
 // This return the values of a select that uses an external CSV file.
 // e.g., "select one from file a_file.csv","select multiple from file a_file.csv","select one external"
-QList<TlkpValue> getSelectValuesFromCSV2(QString variableName, QString fileName, bool hasOrOther, int &result, QDir dir, QSqlDatabase database, QString queryValue, QString codeColumn="name", QString descColumn="label")
+QList<TlkpValue> getSelectValuesFromCSV2(QString variableName, QString variableType, QString fileName, bool hasOrOther, int &result, QDir dir, QSqlDatabase database, QString queryValue, QString codeColumn="name", QString descColumn="label")
 {
+    bool multiSelect = false;
+    if (isSelect(variableType) == 3)
+    {
+        multiSelect = true;
+    }
     QList<TlkpValue> res;
     QStringList descColumns;
     result = 0;
@@ -3626,7 +3658,7 @@ QList<TlkpValue> getSelectValuesFromCSV2(QString variableName, QString fileName,
                                 }
                             }
                         }
-                        checkSelectValue(variableName,res,value.code);
+                        checkSelectValue(variableName,res,value.code,true,multiSelect);
                         res.append(value);
                     }
                     else
@@ -3642,7 +3674,7 @@ QList<TlkpValue> getSelectValuesFromCSV2(QString variableName, QString fileName,
                 }
                 if (hasOrOther)
                 {
-                    bool duplicated = checkSelectValue(variableName,res,"other",false);
+                    bool duplicated = checkSelectValue(variableName,res,"other",false,multiSelect);
                     if (!duplicated)
                     {
                         TlkpValue value;
@@ -3697,8 +3729,11 @@ QList<TlkpValue> getSelectValuesFromCSV2(QString variableName, QString fileName,
 // e.g.:
 //       type: select one canton
 //       appearance: search('cantones', 'matches', 'a_column', ${a_variable})
-QList<TlkpValue> getSelectValuesFromCSV(QString searchExpresion, QJsonArray choices,QString variableName, bool hasOrOther, int &result, QDir dir, QSqlDatabase database, QString &file, QString &codeColumn, QString &descColumn)
+QList<TlkpValue> getSelectValuesFromCSV(QString searchExpresion, QJsonArray choices,QString variableName, QString variableType, bool hasOrOther, int &result, QDir dir, QSqlDatabase database, QString &file, QString &codeColumn, QString &descColumn)
 {    
+    bool multiSelect = false;
+    if (isSelect(variableType) == 3)
+        multiSelect = true;
     QList<TlkpValue> res;
     codeColumn = "";
     result = 0;
@@ -3774,12 +3809,12 @@ QList<TlkpValue> getSelectValuesFromCSV(QString searchExpresion, QJsonArray choi
                                 value.desc.append(desc);
                             }
                         }
-                        checkSelectValue(variableName,res,value.code);
+                        checkSelectValue(variableName,res,value.code,true,multiSelect);
                         res.append(value);
                     }
                     if (hasOrOther)
                     {
-                        bool duplicated = checkSelectValue(variableName,res,"other",false);
+                        bool duplicated = checkSelectValue(variableName,res,"other",false,multiSelect);
                         if (!duplicated)
                         {
                             TlkpValue value;
@@ -3962,8 +3997,11 @@ bool checkColumnName(QString name)
 
 
 //This return the values of a simple select or select multiple
-QList<TlkpValue> getSelectValues(QString variableName, QJsonArray choices, bool hasOther, QStringList extraColumns)
+QList<TlkpValue> getSelectValues(QString variableName,QString variableType,QJsonArray choices, bool hasOther, QStringList extraColumns)
 {
+    bool multiSelect = false;
+    if (isSelect(variableType) == 3)
+        multiSelect = true;
     QList<TlkpValue> res;
     for (int nrow = 0; nrow < choices.count(); nrow++)
     {
@@ -4000,7 +4038,7 @@ QList<TlkpValue> getSelectValues(QString variableName, QJsonArray choices, bool 
         value.code = JSONValue.toObject().value("name").toString();
         QJsonValue JSONlabel = JSONValue.toObject().value("label");
         value.desc = getLabels(JSONlabel);
-        checkSelectValue(variableName,res,value.code);
+        checkSelectValue(variableName,res,value.code,true,multiSelect);
         for (int ex=0; ex < extraColumns.count(); ex++)
         {
             TotherLkpValue other_value;
@@ -4015,7 +4053,7 @@ QList<TlkpValue> getSelectValues(QString variableName, QJsonArray choices, bool 
     }
     if (hasOther)
     {
-        bool duplicated = checkSelectValue(variableName,res,"other",false);
+        bool duplicated = checkSelectValue(variableName,res,"other",false,multiSelect);
         if (!duplicated)
         {
             TlkpValue value;
@@ -4111,7 +4149,7 @@ void parseOSMField(TtableDef &OSMTable, QJsonObject fieldObject)
         QList<TlkpValue> values;
         QStringList extra_columns;
         extra_columns = getExtraColumns(fieldObject.value("choices").toArray());
-        values.append(getSelectValues(variableName,fieldObject.value("choices").toArray(),false,extra_columns));
+        values.append(getSelectValues(variableName,"NONE",fieldObject.value("choices").toArray(),false,extra_columns));
         TfieldDef aField;
         aField.selectSource = "NONE";
         aField.name = fixField(variableName.toLower());
@@ -4465,7 +4503,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     int result;
                     select_type = 3;
                     external_file = fileName;
-                    values.append(getSelectValuesFromCSV2(fixField(variableName, true),fileName,selectHasOrOther(variableType),result,dir,database,"",codeColumn,descColumn));
+                    values.append(getSelectValuesFromCSV2(fixField(variableName, true),variableType,fileName,selectHasOrOther(variableType),result,dir,database,"",codeColumn,descColumn));
                     if (result != 0)
                     {                        
                         if (!justCheck)
@@ -4487,7 +4525,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                         int result;
                         select_type = 4;
                         external_file = fileName;
-                        values.append(getSelectValuesFromXML(fixField(variableName, true),fileName,selectHasOrOther(variableType),result,dir,codeColumn,descColumn));
+                        values.append(getSelectValuesFromXML(fixField(variableName, true),variableType,fileName,selectHasOrOther(variableType),result,dir,codeColumn,descColumn));
                         if (result != 0)
                         {
                             if (!justCheck)
@@ -4510,7 +4548,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                             select_type = 6;
                             external_file = fileName;
                             //qDebug() << fileName;
-                            values.append(getSelectValuesFromGeoJSON(fixField(variableName, true),fileName,result,dir,codeColumn,descColumn,propertyList,propertyTypes));
+                            values.append(getSelectValuesFromGeoJSON(fixField(variableName, true),variableType,fileName,result,dir,codeColumn,descColumn,propertyList,propertyTypes));
                             //qDebug() << values.count();
                             if (result != 0)
                             {
@@ -4527,7 +4565,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                 {                    
                     propertyList = getExtraColumns(fieldObject.value("choices").toArray());
                     propertyTypes = getExtraColumnsTypes(fieldObject.value("choices").toArray(), propertyList);
-                    values.append(getSelectValues(fixField(variableName, true),fieldObject.value("choices").toArray(),selectHasOrOther(variableType),propertyList));
+                    values.append(getSelectValues(fixField(variableName, true),variableType,fieldObject.value("choices").toArray(),selectHasOrOther(variableType),propertyList));
                     select_type = 1;
                     hasOnlyExternalSelects = false;
                 }
@@ -4535,7 +4573,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                 {
                     int result;
                     QString fileName;
-                    values.append(getSelectValuesFromCSV(variableApperance,fieldObject.value("choices").toArray(),fixField(variableName, true),selectHasOrOther(variableType),result,dir,database,fileName,codeColumn,descColumn));
+                    values.append(getSelectValuesFromCSV(variableApperance,fieldObject.value("choices").toArray(),fixField(variableName, true),variableType,selectHasOrOther(variableType),result,dir,database,fileName,codeColumn,descColumn));
                     select_type = 2;
                     external_file = fileName;
                     if (result != 0)
@@ -4555,7 +4593,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
             if (queryField != "")
             {
                 int result;
-                values.append(getSelectValuesFromCSV2(fixField(variableName, true),"itemsets.csv",selectHasOrOther(variableType),result,dir,database,queryField));
+                values.append(getSelectValuesFromCSV2(fixField(variableName, true),variableType,"itemsets.csv",selectHasOrOther(variableType),result,dir,database,queryField));
                 select_type = 5;
                 external_file = "itemsets.csv";
                 if (result != 0)
@@ -5253,7 +5291,7 @@ void parseTable(QJsonObject tableObject, QString tableType, bool repeatOfOne = f
         QList<TlkpValue> values;
         QStringList extra_columns;
         extra_columns = getExtraColumns(tableObject.value("columns").toArray());
-        values.append(getSelectValues(aTable.name,tableObject.value("columns").toArray(),false,extra_columns));
+        values.append(getSelectValues(aTable.name,"select one",tableObject.value("columns").toArray(),false,extra_columns));
         for (int litem = 0; litem < values.count(); litem++)
         {
             aTable.loopItems.append(values[litem].code);
@@ -5743,6 +5781,31 @@ void reportSelectDuplicates()
         eDuplicatedItem = XMLResult.createElement("duplicatedItem");
         eDuplicatedItem.setAttribute("variableName",duplicatedSelectValues[pos].variableName);
         eDuplicatedItem.setAttribute("duplicatedValue",duplicatedSelectValues[pos].selectValue);
+        XMLRoot.appendChild(eDuplicatedItem);
+    }
+    if (outputType == "m")
+        log(XMLResult.toString());
+}
+
+void reportSelectInvalid()
+{
+    QDomElement XMLRoot;
+    XMLRoot = XMLResult.createElement("XMLInvalidSelects");
+    XMLDocRoot.appendChild(XMLRoot);
+    if (outputType != "m")
+    {
+        log("The following variables are multi-select with options that have spaces in the column \"name\" ");
+    }
+    for (int pos = 0; pos <= invalidSelectValues.count()-1; pos++)
+    {
+        if (outputType != "m")
+        {
+            log("\tVariable: " + invalidSelectValues[pos].variableName + " - Option: " + invalidSelectValues[pos].selectValue);
+        }
+        QDomElement eDuplicatedItem;
+        eDuplicatedItem = XMLResult.createElement("invalidItem");
+        eDuplicatedItem.setAttribute("variableName",invalidSelectValues[pos].variableName);
+        eDuplicatedItem.setAttribute("invalidValue",invalidSelectValues[pos].selectValue);
         XMLRoot.appendChild(eDuplicatedItem);
     }
     if (outputType == "m")
@@ -6479,6 +6542,11 @@ int processJSON(QString inputFile, QString mainTable, QString mainField, QDir di
             reportSelectDuplicates();
             exit(9);
         }
+        if (invalidSelectValues.count() > 0)
+        {
+            reportSelectInvalid();
+            exit(36);
+        }
 
         for (int itable = 0; itable < tables.count(); itable++)
         {
@@ -6780,6 +6848,7 @@ int main(int argc, char *argv[])
     title = title + " * 33: Extra survey or choice columns cannot have spaces.              * \n";
     title = title + " * 34: One or more tables have too many columns (>65000 bytes).        * \n";
     title = title + " * 35: Select or multi-select uses \"or other\".                       * \n";
+    title = title + " * 36: Multi-selects have spaces in column name.                       * \n";
     title = title + " *                                                                     * \n";
     title = title + " * XML = XML oputput is available.                                     * \n";
     title = title + " ********************************************************************* \n";
