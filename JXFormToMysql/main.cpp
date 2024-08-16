@@ -2002,7 +2002,7 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
             for (int nlkp = 0; nlkp < tables[pos].lkpValues.count();nlkp++)
             {
                 QDomElement aLKPValue = insertValuesXML.createElement("value");
-                aLKPValue.setAttribute("code",tables[pos].lkpValues[nlkp].code);
+                aLKPValue.setAttribute("code",tables[pos].lkpValues[nlkp].code.replace("'","`").simplified());
                 aLKPValue.setAttribute("description",fixString(getDescForLanguage(tables[pos].lkpValues[nlkp].desc,defLangCode)));
                 // Add other values
                 for (int oth = 0; oth < tables[pos].lkpValues[nlkp].other_values.count(); oth++)
@@ -2445,7 +2445,7 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
                 }
                 insertSQL = insertSQL.left(insertSQL.length()-1) + ") VALUES ('";
 
-                insertSQL = insertSQL + tables[pos].lkpValues[clm].code.replace("'","`") + "',\"";
+                insertSQL = insertSQL + tables[pos].lkpValues[clm].code.replace("'","`").simplified() + "',\"";
                 insertSQL = insertSQL + fixString(getDescForLanguage(tables[pos].lkpValues[clm].desc,defLangCode)) + "\",";
                 for (int p = 0; p < tables[pos].propertyList.count(); p++)
                 {
