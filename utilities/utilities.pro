@@ -4,7 +4,6 @@ CONFIG += debug
 
 SUBDIRS = createFromXML \
     insertFromXML \
-    MySQLDenormalize \
     MySQLToXLSX \
     MySQLToCSV \
     MySQLToJSON \

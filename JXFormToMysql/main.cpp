@@ -25,8 +25,8 @@ License along with JXFormToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl
 #include <QDebug>
 #include <QDomComment>
 #include <QDirIterator>
-#include <QuaZip-Qt5-1.3/quazip/quazip.h>
-#include <QuaZip-Qt5-1.3/quazip/quazipfile.h>
+#include <QuaZip-Qt5-1.4/quazip/quazip.h>
+#include <QuaZip-Qt5-1.4/quazip/quazipfile.h>
 #include <QDomDocument>
 #include <csv.h>
 #include <QSqlDatabase>
