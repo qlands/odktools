@@ -31,8 +31,9 @@ mainClass::mainClass(QObject *parent) : QObject(parent)
 
 void mainClass::run()
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     sqlStream.setCodec("UTF-8");
-
+#endif
     recordMap = QDomDocument("ODKRecordMapFile");
     recordMapRoot = recordMap.createElement("ODKRecordMapXML");
     recordMapRoot.setAttribute("version", "1.0");
@@ -217,7 +218,9 @@ void mainClass::run()
                         if (XMLLogFile.open(QIODevice::WriteOnly | QIODevice::Text))
                         {
                             QTextStream strXMLLog(&XMLLogFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                             strXMLLog.setCodec("UTF-8");
+#endif
                             xmlLog.save(strXMLLog,1,QDomNode::EncodingFromTextStream);
                             XMLLogFile.close();
                         }
@@ -276,7 +279,9 @@ void mainClass::run()
                 if (file.open(QIODevice::WriteOnly | QIODevice::Text))
                 {
                     QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     out.setCodec("UTF-8");
+#endif
                     recordMap.save(out,1,QDomNode::EncodingFromTextStream);
                     file.close();
                 }
@@ -799,7 +804,11 @@ QList<TfieldDef > mainClass::createSQL(QSqlDatabase db, QVariantMap jsonData, QS
 
             mSelectValues.clear();
             //Split the values into a stringlist
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             mSelectValues.append(insertObject.itemValue(pos).simplified().split(" ",QString::SkipEmptyParts));
+#else
+            mSelectValues.append(insertObject.itemValue(pos).simplified().split(" ",Qt::SkipEmptyParts));
+#endif
             //Process each value
             for (nvalue = 0; nvalue < mSelectValues.count();nvalue++)
             {
@@ -1082,7 +1091,11 @@ void mainClass::processLoop(QJsonObject jsonData, QString loopTable, QString loo
                     QString fieldValue;
                     QString xmlKey = loopXMLRoot + "/" + loopItems[iItem] + "/" + fields[pos].xmlCode;
                     fieldValue = jsonData.value(xmlKey).toString("");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     QStringList parts = fieldValue.split(" ",QString::SkipEmptyParts);
+#else
+                    QStringList parts = fieldValue.split(" ",Qt::SkipEmptyParts);
+#endif
                     for (int ipart = 0; ipart < parts.count(); ipart++)
                     {
                         recordUUID=QUuid::createUuid();
@@ -1169,7 +1182,11 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
         loopXMLRoot = table.toElement().attribute("xmlcode","none");
         QString loopTable;
         loopTable = table.toElement().attribute("mysqlcode","none");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QStringList loopItems = table.toElement().attribute("loopitems","").split(QChar(743),QString::SkipEmptyParts);
+#else
+        QStringList loopItems = table.toElement().attribute("loopitems","").split(QChar(743),Qt::SkipEmptyParts);
+#endif
         if (loopItems.count() > 0)
         {
             QDomNode fieldNode = table.firstChild();
@@ -1180,7 +1197,7 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
                 {
                     TfieldDef aLoopField;
                     aLoopField.xmlCode = fieldNode.toElement().attribute("xmlcode","");
-                    aLoopField.decSize = fieldNode.toElement().attribute("decsize","0").toInt();
+                    aLoopField.decSize = QString::number(fieldNode.toElement().attribute("decsize","0").toInt());
                     aLoopField.key = false;
                     if (fieldNode.toElement().attribute("isMultiSelect","false") == "true")
                     {
@@ -1191,7 +1208,7 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
                         aLoopField.multiSelect = false;
                     aLoopField.name = fieldNode.toElement().attribute("mysqlcode","");
                     aLoopField.ODKType = fieldNode.toElement().attribute("odktype","");
-                    aLoopField.size = fieldNode.toElement().attribute("size",0).toInt();
+                    aLoopField.size = QString::number(fieldNode.toElement().attribute("size",0).toInt());
                     aLoopField.type = fieldNode.toElement().attribute("type","varchar");
                     loopFields.append(aLoopField);
                 }
@@ -1216,8 +1233,8 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
                     field.xmlCode = child.toElement().attribute("xmlcode");
                     field.type = child.toElement().attribute("type","varchar");
                     field.ODKType = child.toElement().attribute("odktype","text");
-                    field.size = child.toElement().attribute("size","0").toInt();
-                    field.decSize = child.toElement().attribute("decsize","0").toInt();
+                    field.size = QString::number(child.toElement().attribute("size","0").toInt());
+                    field.decSize = QString::number(child.toElement().attribute("decsize","0").toInt());
 
                     if (child.toElement().attribute("key").toStdString() == "true")
                         field.key = true;
@@ -1245,7 +1262,7 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
                         keys.append(createSQL(db,jsonData.toVariantMap(),tableCode,fields,keys,emptyMap,true));    //Change the variant map to an object later on!
                         genSQL = false;
                     }
-                    if ((osm == false) && (loop == false))
+                    if ((osm == "false") && (loop == "false"))
                     {
                         QJsonArray children = jsonData.value(child.toElement().attribute("xmlcode")).toArray();
                         for (int chld = 0; chld < children.count(); chld++)

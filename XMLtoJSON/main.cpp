@@ -136,11 +136,11 @@ pt::ptree processNodeBoost(QStringList repeatArray,bool group,QDomNode node,pt::
                 //If its a group then we need to extract the elements recursively because they don't generate an array
                 pt::ptree elems;//QJsonArray elems;
                 elems = processNodeBoost(repeatArray,true,start,json);
-                int count;
-                count = 0;
+                //int count;
+                //count = 0;
                 BOOST_FOREACH(boost::property_tree::ptree::value_type const&v, elems.get_child(""))
                 {
-                    count++;
+                    //count++;
                     const boost::property_tree::ptree &subtree = v.second;
                     BOOST_FOREACH(  boost::property_tree::ptree::value_type const&v2, subtree )
                     {
@@ -331,7 +331,11 @@ int main(int argc, char *argv[])
         QString nodeset;
         QStringList nodeArray;
         nodeset = repeats.item(pos).toElement().attribute("nodeset");
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         nodeArray = nodeset.split("/",QString::SkipEmptyParts);
+#else
+        nodeArray = nodeset.split("/",Qt::SkipEmptyParts);
+#endif
         if (nodeArray.length() > 0)
             repeatArray.append(nodeArray[nodeArray.length()-1]);
     }

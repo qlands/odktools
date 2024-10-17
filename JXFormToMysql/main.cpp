@@ -25,8 +25,14 @@ License along with JXFormToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl
 #include <QDebug>
 #include <QDomComment>
 #include <QDirIterator>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QuaZip-Qt6-1.4/quazip/quazip.h>
+#include <QuaZip-Qt6-1.4/quazip/quazipfile.h>
+#include <QRegExp>
+#else
 #include <QuaZip-Qt5-1.4/quazip/quazip.h>
 #include <QuaZip-Qt5-1.4/quazip/quazipfile.h>
+#endif
 #include <QDomDocument>
 #include <csv.h>
 #include <QSqlDatabase>
@@ -1573,7 +1579,7 @@ TtableDef checkDuplicatedLkpTable(QString table, QList<TlkpValue> thisValues)
     QString thisDesc;
     QString currenDesc;
     //Move the new list of values to a new list and sort it by code    
-    qSort(thisValues.begin(),thisValues.end(),lkpComp);
+    std::sort(thisValues.begin(),thisValues.end(),lkpComp);
 
     QString defLangCode;
     defLangCode = getLanguageCode(getDefLanguage());
@@ -1587,7 +1593,7 @@ TtableDef checkDuplicatedLkpTable(QString table, QList<TlkpValue> thisValues)
                 //Move the current list of values to a new list and sort it by code
                 currentValues.clear();
                 currentValues.append(tables[pos].lkpValues);
-                qSort(currentValues.begin(),currentValues.end(),lkpComp);
+                std::sort(currentValues.begin(),currentValues.end(),lkpComp);
 
                 if (currentValues.count() == thisValues.count()) //Same number of values
                 {
@@ -1859,28 +1865,33 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
     if (!sqlInsertFile.open(QIODevice::WriteOnly | QIODevice::Text))
              return;
     QTextStream sqlInsertStrm(&sqlInsertFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     sqlInsertStrm.setCodec("UTF-8");
-
+#endif
     QFile iso639File(transFile);
     if (!iso639File.open(QIODevice::WriteOnly | QIODevice::Text))
              return;
     QTextStream iso639Strm(&iso639File);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     iso639Strm.setCodec("UTF-8");
-
+#endif
     QFile sqlUpdateFile(metaFile);
     if (!sqlUpdateFile.open(QIODevice::WriteOnly | QIODevice::Text))
              return;
 
     QTextStream sqlUpdateStrm(&sqlUpdateFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     sqlUpdateStrm.setCodec("UTF-8");
-
+#endif
 
     QFile sqlDropFile(dropSQL);
     if (!sqlDropFile.open(QIODevice::WriteOnly | QIODevice::Text))
              return;
 
     QTextStream sqlDropStrm(&sqlDropFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     sqlDropStrm.setCodec("UTF-8");
+#endif
 
     //Start creating the header or each file.
     QDateTime date;
@@ -1932,7 +1943,7 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
     }
     iso639Strm << "\n";
 
-    qSort(tables.begin(),tables.end(),tblComp);
+    std::sort(tables.begin(),tables.end(),tblComp);
 
     for (int pos = tables.count()-1; pos >=0;pos--)
     {
@@ -2480,7 +2491,9 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
     if (file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         out.setCodec("UTF-8");        
+#endif
         outputdoc.save(out,1,QDomNode::EncodingFromTextStream);
         file.close();
     }
@@ -2494,7 +2507,9 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
     if (XMLCreateFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream outXMLCreate(&XMLCreateFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         outXMLCreate.setCodec("UTF-8");
+#endif
         XMLSchemaStructure.save(outXMLCreate,1,QDomNode::EncodingFromTextStream);
         XMLCreateFile.close();
     }
@@ -2508,7 +2523,9 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
     if (XMLInsertFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream outXMLInsert(&XMLInsertFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         outXMLInsert.setCodec("UTF-8");
+#endif
         insertValuesXML.save(outXMLInsert,1,QDomNode::EncodingFromTextStream);
         XMLInsertFile.close();
     }

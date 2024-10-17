@@ -15,6 +15,11 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 INCLUDEPATH += ../3rdparty
-LIBS += -lquazip1-qt5 -lcsv
 
+greaterThan(QT_MAJOR_VERSION, 5) {
+    LIBS += -lquazip1-qt6 -lcsv
+    QT += core5compat
+} else {
+    LIBS += -lquazip1-qt5 -lcsv
+}
 SOURCES += main.cpp
