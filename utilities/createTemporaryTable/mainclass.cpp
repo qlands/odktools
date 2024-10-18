@@ -6,7 +6,7 @@
 #include <QDomNode>
 #include <QProcess>
 #include <QChar>
-#include <QTime>
+#include <QElapsedTimer>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
@@ -215,12 +215,12 @@ int mainClass::generateXLSX()
 
         QStringList arguments;
         QProcess *mySQLDumpProcess = new QProcess();        
-        QTime procTime;
+        QElapsedTimer procTime;
         procTime.start();
         QString sql;
         QStringList fields;        
         QStringList sheets;
-        QStringList csvs;
+        //QStringList csvs;
 
         QVector <TlinkedTable> linked_tables;
         QVector <TmultiSelectTable> multiSelectTables;

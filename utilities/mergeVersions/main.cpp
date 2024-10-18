@@ -128,12 +128,20 @@ int main(int argc, char *argv[])
     QList<TignoreTableValues> valuesToIgnore;
     if (ignoreString != "")
     {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         ignoreTables = ignoreString.split(";",QString::SkipEmptyParts);
+#else
+        ignoreTables = ignoreString.split(";",Qt::SkipEmptyParts);
+#endif
         for (int pos =0; pos < ignoreTables.count(); pos++)
         {
             if (ignoreTables[pos].indexOf(":") > 0)
             {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 QStringList parts = ignoreTables[pos].split(":",QString::SkipEmptyParts);
+#else
+                QStringList parts = ignoreTables[pos].split(":",Qt::SkipEmptyParts);
+#endif
                 if (parts.count() == 2)
                 {
                     int index;
@@ -150,12 +158,20 @@ int main(int argc, char *argv[])
                     {
                         TignoreTableValues aIgnoreValue;
                         aIgnoreValue.table = parts[0];
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         aIgnoreValue.values = parts[1].split(",",QString::SkipEmptyParts);
+#else
+                        aIgnoreValue.values = parts[1].split(",",Qt::SkipEmptyParts);
+#endif
                         valuesToIgnore.append(aIgnoreValue);
                     }
                     else
                     {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         valuesToIgnore[index].values.append(parts[1].split(",",QString::SkipEmptyParts));
+#else
+                        valuesToIgnore[index].values.append(parts[1].split(",",Qt::SkipEmptyParts));
+#endif
                     }
                 }
             }

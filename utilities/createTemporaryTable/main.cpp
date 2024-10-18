@@ -3,6 +3,9 @@
 #include <QTimer>
 #include "mainclass.h"
 #include <QTime>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRandomGenerator>
+#endif
 
 /*
 createTemporaryTable
@@ -29,7 +32,11 @@ QString getRandomHex(const int &length)
     QString randomHex;
 
     for(int i = 0; i < length; i++) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         int n = qrand() % 16;
+#else
+        int n = QRandomGenerator::global()->generate() % 16;
+#endif
         randomHex.append(QString::number(n,16));
     }
 

@@ -1032,7 +1032,9 @@ int mainClass::generateXLSX()
             if (XMLSheetFile.open(QIODevice::WriteOnly | QIODevice::Text))
             {
                 QTextStream outXMLSheet(&XMLSheetFile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 outXMLSheet.setCodec("UTF-8");
+#endif
                 XMLSheetStructure.save(outXMLSheet,1,QDomNode::EncodingFromTextStream);
                 XMLSheetFile.close();
             }

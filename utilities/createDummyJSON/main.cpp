@@ -240,10 +240,18 @@ int main(int argc, char *argv[])
 
     if (sarrays != "")
     {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QStringList items = sarrays.split(",",QString::SkipEmptyParts);
+#else
+        QStringList items = sarrays.split(",",Qt::SkipEmptyParts);
+#endif
         for (int pos = 0; pos < items.count(); pos++)
         {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QStringList parts = items[pos].split(":",QString::SkipEmptyParts);
+#else
+            QStringList parts = items[pos].split(":",Qt::SkipEmptyParts);
+#endif
             if (parts.length() == 2)
             {
                 TarraySizeItem item;

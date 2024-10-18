@@ -244,13 +244,13 @@ void DCFToXML::convertToXML(QString dcfFile)
         exit(1);
     }
     QTextStream in(&file);
-    int pos;
-    pos = 1;
+    //int pos;
+    //pos = 1;
     while (!in.atEnd())
     {
         QString line = in.readLine();
         if (!line.isEmpty())
             addToXML(line); //Parse the line
-        pos++;
+        //pos++;
     }
 }

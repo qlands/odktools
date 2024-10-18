@@ -19,7 +19,7 @@ License along with Merge Versions.  If not, see <http://www.gnu.org/licenses/lgp
 */
 
 #include "compareinsert.h"
-#include <iostream>
+//#include <iostream>
 
 compareInsert::compareInsert(QObject *parent) : QObject(parent)
 {
@@ -85,7 +85,9 @@ int compareInsert::createCFile()
     if (file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         out.setCodec("UTF-8");
+#endif
         docB.save(out,1,QDomNode::EncodingFromTextStream);
         file.close();
     }
@@ -107,7 +109,9 @@ int compareInsert::createDiffFile()
         if (dfile.open(QIODevice::WriteOnly | QIODevice::Text))
         {
             QTextStream outD(&dfile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             outD.setCodec("UTF-8");
+#endif
             for (int tpos = 0; tpos < diff.count();tpos++)
             {
                 if (diff[tpos].parsed == false)

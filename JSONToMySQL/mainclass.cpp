@@ -249,9 +249,9 @@ void mainClass::run()
                 }
                 UUIDFile.close();
 
-                QFileInfo fi(json);
+                //QFileInfo fi(json);
                 // Inserting into the submission database
-                QString sql;
+                //QString sql;
 
                 if (outputType == "h")
                 {

@@ -534,7 +534,9 @@ int main(int argc, char *argv[])
                         if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
                             return  1;
                         QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         out.setCodec("UTF-8");
+#endif
                         out << "BEGIN;\n";
                         for (int pos = 0; pos < lst_tables.count(); pos++)
                         {

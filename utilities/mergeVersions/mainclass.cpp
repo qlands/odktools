@@ -131,7 +131,9 @@ void mainClass::run()
             if (file.open(QIODevice::WriteOnly | QIODevice::Text))
             {
                 QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 out.setCodec("UTF-8");
+#endif
                 XMLResult.save(out,1,QDomNode::EncodingFromTextStream);
                 file.close();
             }

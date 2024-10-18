@@ -50,9 +50,11 @@ int main(int argc, char *argv[])
     QString tables = QString::fromUtf8(tablesArg.getValue().c_str());
 
     mainClass *task = new mainClass(&app);
-
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     task->setParameters(host,port,user,password,schema,output,tables.split(",",QString::SkipEmptyParts));
-
+#else
+    task->setParameters(host,port,user,password,schema,output,tables.split(",",Qt::SkipEmptyParts));
+#endif
     QObject::connect(task, SIGNAL(finished()), &app, SLOT(quit()));
 
     QTimer::singleShot(0, task, SLOT(run()));

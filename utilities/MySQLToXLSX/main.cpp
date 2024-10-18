@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     QString resolve_type = QString::fromUtf8(resolveArg.getValue().c_str());
     bool ok;
 
-    if (resolve_type <= 0 && resolve_type > 3)
+    if (resolve_type.toInt() <= 0 && resolve_type.toInt() > 3)
     {
         log_out("Resolving code must be 1, 2, or 3");
         exit(1);

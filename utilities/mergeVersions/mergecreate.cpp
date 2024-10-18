@@ -124,7 +124,9 @@ int mergeCreate::compare()
                     if (file.open(QIODevice::WriteOnly | QIODevice::Text))
                     {
                         QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         out.setCodec("UTF-8");
+#endif
                         docB.save(out,1,QDomNode::EncodingFromTextStream);
                         file.close();
                     }
@@ -140,7 +142,9 @@ int mergeCreate::compare()
                     if (dfile.open(QIODevice::WriteOnly | QIODevice::Text))
                     {
                         QTextStream outD(&dfile);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         outD.setCodec("UTF-8");
+#endif
                         for (int dpos = 0; dpos < diff.count();dpos++)
                         {
                             outD << diff[dpos];

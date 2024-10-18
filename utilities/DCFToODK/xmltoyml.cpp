@@ -5,11 +5,15 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
-#include <iostream>
+//#include <iostream>
 #include <QDomNodeList>
 #include <QProcess>
 #include <QUuid>
 #include <QDir>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRegExp>
+#include <QRegularExpression>
+#endif
 
 
 namespace pt = boost::property_tree;
@@ -288,7 +292,12 @@ void XMLToYML::generateYML(QString file, QString mainRecord, QString tempDir)
     pt::ptree settings_sheet;
     pt::ptree settings_object;
     settings_object.put("form_title",fileName.toStdString());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     settings_object.put("form_id",fileName.remove(QRegExp("[^a-zA-Z\\d\\s]")).toStdString());
+#else
+    static QRegularExpression re("[^a-zA-Z\\d\\s]");
+    settings_object.put("form_id",fileName.remove(re).toStdString());
+#endif
     settings_sheet.push_back(std::make_pair("", settings_object));
     JSONRoot.add_child("settings",settings_sheet);
 
