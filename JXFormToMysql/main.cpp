@@ -238,6 +238,7 @@ struct tableDef
   bool isOSM;
   bool isGroup;
   bool hasOther = false;
+  QString lookupCSV;
 };
 typedef tableDef TtableDef;
 
@@ -1566,7 +1567,7 @@ QString get_related_usage(QString table)
 
 //This fuction checkd wheter a lookup table is duplicated.
 //If there is a match then returns such table
-TtableDef checkDuplicatedLkpTable(QString table, QList<TlkpValue> thisValues)
+TtableDef checkDuplicatedLkpTable(QString table, QList<TlkpValue> thisValues, bool select_from_file, QString lookupCSV)
 {    
     TtableDef empty;
     empty.name = "EMPTY";
@@ -1613,6 +1614,9 @@ TtableDef checkDuplicatedLkpTable(QString table, QList<TlkpValue> thisValues)
                     }
                     if (found)
                     {
+                        if (select_from_file)
+                            if (tables[pos].lookupCSV != lookupCSV)
+                                return empty;
                         int idx;
                         idx = -1;
                         for (int pos2=0; pos2 < duplicated_lookups.count(); pos2++)
@@ -4192,7 +4196,7 @@ void parseOSMField(TtableDef &OSMTable, QJsonObject fieldObject)
         {
             //Creating the lookp table if its neccesary
             QString table_name = "lkp" + fixField(variableName.toLower(),true);
-            TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values);
+            TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values,false,"");
             lkpTable.isLoop = false;
             lkpTable.isOSM = false;
             lkpTable.isGroup = false;
@@ -4490,7 +4494,9 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
         QString codeColumn="name";
         QString descColumn="label";
         QStringList propertyList;
-        QStringList propertyTypes;        
+        QStringList propertyTypes;
+        bool select_from_file = false;
+        QString fileName;
         if ((isSelect(variableType) == 1) || (isSelect(variableType) == 3) || (isSelect(variableType) == 4))
         {
             bool fromSearchCSV;
@@ -4509,7 +4515,6 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
             {
                 if (fieldObject.value("itemset").toString("").toLower().trimmed().indexOf(".csv") > 0)
                 {
-                    QString fileName;
                     fileName = fieldObject.value("itemset").toString("").toLower().trimmed();                    
                     if (!fieldObject.value("parameters").isUndefined())
                     {
@@ -4520,6 +4525,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     int result;
                     select_type = 3;
                     external_file = fileName;
+                    select_from_file = true;
                     values.append(getSelectValuesFromCSV2(fixField(variableName, true),variableType,fileName,selectHasOrOther(variableType),result,dir,database,"",codeColumn,descColumn));
                     if (result != 0)
                     {                        
@@ -4529,7 +4535,6 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                 }
                 else                    
                 {
-                    QString fileName;
                     fileName = fieldObject.value("itemset").toString("").toLower().trimmed();
                     if (fileName.toLower().trimmed().indexOf(".xml") >= 0)
                     {
@@ -4542,6 +4547,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                         int result;
                         select_type = 4;
                         external_file = fileName;
+                        select_from_file = true;
                         values.append(getSelectValuesFromXML(fixField(variableName, true),variableType,fileName,selectHasOrOther(variableType),result,dir,codeColumn,descColumn));
                         if (result != 0)
                         {
@@ -4565,6 +4571,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                             select_type = 6;
                             external_file = fileName;
                             //qDebug() << fileName;
+                            select_from_file = true;
                             values.append(getSelectValuesFromGeoJSON(fixField(variableName, true),variableType,fileName,result,dir,codeColumn,descColumn,propertyList,propertyTypes));
                             //qDebug() << values.count();
                             if (result != 0)
@@ -4589,7 +4596,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                 else
                 {
                     int result;
-                    QString fileName;
+                    select_from_file = true;
                     values.append(getSelectValuesFromCSV(variableApperance,fieldObject.value("choices").toArray(),fixField(variableName, true),variableType,selectHasOrOther(variableType),result,dir,database,fileName,codeColumn,descColumn));
                     select_type = 2;
                     external_file = fileName;
@@ -4720,8 +4727,9 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                         listName = fixField(variableName.toLower(), true);
                 }
                 QString table_name = "lkp" + listName;
-                TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values);
+                TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values,select_from_file,fileName);
                 lkpTable.isLoop = false;
+                lkpTable.lookupCSV = fileName;
                 lkpTable.isOSM = false;
                 lkpTable.isGroup = false;
                 if (lkpTable.name == "EMPTY")
@@ -4999,7 +5007,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                 }
                 QString table_name = "lkp" + listName;
 
-                TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values);
+                TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values,select_from_file,fileName);
                 lkpTable.isLoop = false;
                 lkpTable.isOSM = false;
                 lkpTable.isGroup = false;
@@ -5015,6 +5023,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     }
                     lkpTable.pos = -1;
                     lkpTable.islookup = true;
+                    lkpTable.lookupCSV = fileName;
                     lkpTable.isOneToOne = false;
                     lkpTable.hasOther = selectHasOrOther(variableType);
                     //Creates the field for code in the lookup
@@ -5360,7 +5369,7 @@ void parseTable(QJsonObject tableObject, QString tableType, bool repeatOfOne = f
                     listName = fixField(variableName.toLower(), true);
             }
             QString table_name = "lkp" + listName;
-            TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values);
+            TtableDef lkpTable = checkDuplicatedLkpTable(table_name,values,false,"");
             lkpTable.isLoop = false;
             lkpTable.isOSM = false;
             lkpTable.isGroup = false;
