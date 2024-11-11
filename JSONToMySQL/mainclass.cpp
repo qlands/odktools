@@ -1264,13 +1264,14 @@ int mainClass::procTable2(QSqlDatabase db,QJsonObject jsonData, QDomNode table, 
                     }
                     if ((osm == "false") && (loop == "false"))
                     {
-                        QJsonArray children = jsonData.value(child.toElement().attribute("xmlcode")).toArray();
-                        for (int chld = 0; chld < children.count(); chld++)
-                            procTable2(db,children.at(chld).toObject(),child,keys);
+                        procTable2(db,jsonData,child,keys);
+
                     }
                     else
                     {
-                        procTable2(db,jsonData,child,keys);
+                        QJsonArray children = jsonData.value(child.toElement().attribute("xmlcode")).toArray();
+                        for (int chld = 0; chld < children.count(); chld++)
+                            procTable2(db,children.at(chld).toObject(),child,keys);
                     }
                 }
                 else
