@@ -46,6 +46,7 @@ License along with JXFormToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QUuid>
+#include <QProcess>
 
 //*******************************************Global variables***********************************************
 bool debug;
@@ -1315,49 +1316,144 @@ void cb2(int , void *)
 
 int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase database)
 {    
-    FILE *fp;
-    struct csv_parser p;
-    char buf[4096];
-    size_t bytes_read;
-    size_t retval;
-    unsigned char options = 0;
+    QFileInfo fi(fileName);
 
-    if (csv_init(&p, CSV_STRICT) != 0)
-    {
-        log("Failed to initialize csv parser");
-        return 1;
-    }
-    fp = fopen(fileName.toUtf8().constData(), "rb");
-    if (!fp)
-    {
-        log("Failed to open CSV file " + fileName);
-        return 0;
-    }
-    options = CSV_APPEND_NULL;
-    csv_set_opts(&p, options);
+    QProcess csvcutProcess;
+    QProcess awkProcess;
+    QProcess pasteProcess;
+
+    csvcutProcess.setProgram("csvcut");
+    csvcutProcess.setArguments({"-n", fileName});
+
+    awkProcess.setProgram("awk");
+    awkProcess.setArguments({"-F: ", "NR >= 1 {print $2}"});
+
+    pasteProcess.setProgram("paste");
+    pasteProcess.setArguments({"-sd", "|"});
+
+    csvcutProcess.setStandardOutputProcess(&awkProcess);
+    awkProcess.setStandardOutputProcess(&pasteProcess);
+
+    csvcutProcess.start();
+    awkProcess.start();
+    pasteProcess.start();
     CSVColumError = false;
-    CSVRowNumber = 1;
-    CSVvalues.clear();
-    CSVSQLs.clear();
-    while ((bytes_read=fread(buf, 1, 4096, fp)) > 0)
+    pasteProcess.waitForFinished();
+    if (pasteProcess.exitCode() == 0)
     {
-        if ((retval = csv_parse(&p, buf, bytes_read, cb1, cb2, NULL)) != bytes_read)
+        QString columns_str = pasteProcess.readAllStandardOutput();
+        columns_str = columns_str.replace("\n","");
+
+        QStringList columns = columns_str.split("|");
+        QString sql = "CREATE TABLE data (";
+        for (int pos = 0; pos < columns.count();pos++)
         {
-            if (csv_error(&p) == CSV_EPARSE)
+            QString columnName;
+            columnName = fixColumnName(columns[pos]);
+            if (isColumnValid(columnName) == false)
+                CSVColumError = true;
+            sql = sql + columnName + " TEXT,";
+        }
+        sql = sql.left(sql.length()-1) + ");";
+        CSVSQLs.append(sql);
+
+        QString jsonFile = fi.baseName();
+        jsonFile = tempDirectory.absolutePath() + tempDirectory.separator() + jsonFile + ".json";
+
+        QProcess CSVToJSON;
+        QStringList args;
+        args.append(fileName);
+        CSVToJSON.setProgram("csvjson");
+        CSVToJSON.setArguments(args);
+        CSVToJSON.setStandardOutputFile(jsonFile);
+        CSVToJSON.start();
+        CSVToJSON.waitForFinished();
+        if (CSVToJSON.exitCode() == 0)
+        {
+            QFile JSONFile(jsonFile);
+            if (!JSONFile.open(QIODevice::ReadOnly))
             {
-                log("Malformed data at byte " + QString::number((unsigned long)retval + 1) + " in file " + fileName);
+                log("Cannot open" + jsonFile);
                 return 1;
             }
-            else
+            QByteArray JSONData = JSONFile.readAll();
+            QJsonDocument JSONDocument;
+            JSONDocument = QJsonDocument::fromJson(JSONData);
+            QJsonArray firstObject = JSONDocument.array();
+            if (!firstObject.isEmpty())
             {
-                log("Error \"" + QString::fromUtf8(csv_strerror(csv_error(&p))) + "\" in file " + fileName);
-                return 1;
+                for(int tmp=0; tmp < firstObject.count(); tmp++)
+                {
+                    sql = "INSERT INTO data VALUES (";
+                    QJsonObject obj = firstObject[tmp].toObject();
+                    for (int pos = 0; pos < columns.count();pos++)
+                    {
+                        QString columnValue;
+                        columnValue = obj.value(columns[pos]).toString();
+                        sql = sql + "\"" + columnValue.replace("\"","") + "\",";
+                    }
+                    sql = sql.left(sql.length()-1) + ");";
+                    CSVSQLs.append(sql);
+                }
             }
         }
+        else
+        {
+            log("Failed to convert CSV to JSON for file " + fileName);
+            return 1;
+        }
     }
-    fclose(fp);
-    csv_fini(&p, cb1, cb2, NULL);
-    csv_free(&p);
+    else
+    {
+        log("Failed to read csv columnns in file " + fileName);
+        return 1;
+    }
+
+    // Start of replacement
+
+    // FILE *fp;
+    // struct csv_parser p;
+    // char buf[4096];
+    // size_t bytes_read;
+    // size_t retval;
+    // unsigned char options = 0;
+
+    // if (csv_init(&p, CSV_STRICT) != 0)
+    // {
+    //     log("Failed to initialize csv parser");
+    //     return 1;
+    // }
+    // fp = fopen(fileName.toUtf8().constData(), "rb");
+    // if (!fp)
+    // {
+    //     log("Failed to open CSV file " + fileName);
+    //     return 0;
+    // }
+    // options = CSV_APPEND_NULL;
+    // csv_set_opts(&p, options);
+    // CSVColumError = false;
+    // CSVRowNumber = 1;
+    // CSVvalues.clear();
+    // CSVSQLs.clear();
+    // while ((bytes_read=fread(buf, 1, 4096, fp)) > 0)
+    // {
+    //     if ((retval = csv_parse(&p, buf, bytes_read, cb1, cb2, NULL)) != bytes_read)
+    //     {
+    //         if (csv_error(&p) == CSV_EPARSE)
+    //         {
+    //             log("Malformed data at byte " + QString::number((unsigned long)retval + 1) + " in file " + fileName);
+    //             return 1;
+    //         }
+    //         else
+    //         {
+    //             log("Error \"" + QString::fromUtf8(csv_strerror(csv_error(&p))) + "\" in file " + fileName);
+    //             return 1;
+    //         }
+    //     }
+    // }
+    // fclose(fp);
+    // csv_fini(&p, cb1, cb2, NULL);
+    // csv_free(&p);
 
     if (CSVColumError)
     {
@@ -1370,7 +1466,10 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
         exit(14);
     }
 
-    QFileInfo fi(fileName);
+
+    // End of replacement
+
+
     QString sqlLiteFile;
     sqlLiteFile = fi.baseName();
     sqlLiteFile = tempDirectory.absolutePath() + tempDirectory.separator() + sqlLiteFile + ".sqlite";
@@ -1392,6 +1491,7 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
         query.exec("BEGIN TRANSACTION");
         for (int pos = 0; pos <= CSVSQLs.count()-1;pos++)
         {
+            //qDebug() << CSVSQLs[pos];
             if (!query.exec(CSVSQLs[pos]))
             {
                 log("Cannot insert data for row: " + QString::number(pos+2) + " in file: " + sqlLiteFile + " reason: " + query.lastError().databaseText());
@@ -6877,6 +6977,7 @@ int main(int argc, char *argv[])
     title = title + " * 36: Multi-selects have spaces in column name.                       * \n";
     title = title + " *                                                                     * \n";
     title = title + " * XML = XML oputput is available.                                     * \n";
+    title = title + " * Note: This tool requires CSVKit (sudo apt-get install csvkit)       * \n";
     title = title + " ********************************************************************* \n";
 
     TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
