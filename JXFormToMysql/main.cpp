@@ -1245,12 +1245,12 @@ void report_file_error(QString file_name)
     log(XMLResult.toString());
 }
 
-void cb1(void *s, size_t, void *)
-{
-    char* charData;
-    charData = (char*)s;
-    CSVvalues.append(QString::fromUtf8(charData));
-}
+// void cb1(void *s, size_t, void *)
+// {
+//     char* charData;
+//     charData = (char*)s;
+//     CSVvalues.append(QString::fromUtf8(charData));
+// }
 
 QString fixColumnName(QString column)
 {
@@ -1275,44 +1275,44 @@ bool isColumnValid(QString column)
     }
 }
 
-void cb2(int , void *)
-{
-    QString sql;
-    if (CSVRowNumber == 1)
-    {
-        sql = "CREATE TABLE data (";
-        numColumns = 0;
-        for (int pos = 0; pos <= CSVvalues.count()-1;pos++)
-        {
-            numColumns++;
-            QString columnName;
-            columnName = fixColumnName(CSVvalues[pos]);
-            if (isColumnValid(columnName) == false)
-                CSVColumError = true;
-            sql = sql + columnName + " TEXT,";
-        }
-        sql = sql.left(sql.length()-1) + ");";
-        CSVSQLs.append(sql);
-    }
-    else
-    {
-        sql = "INSERT INTO data VALUES (";
-        numColumnsInData = 0;
-        //Using numColumns so avoids more columns than the heading
-        for (int pos = 0; pos <= numColumns-1;pos++)
-        {
-            numColumnsInData++;
-            sql = sql + "\"" + CSVvalues[pos].replace("\"","") + "\",";
-        }
-        //This will fix if a row has less columns than the heading
-        for (int pos =1; pos <= numColumns-numColumnsInData;pos++)
-            sql = sql + "\"\"";
-        sql = sql.left(sql.length()-1) + ");";
-        CSVSQLs.append(sql);
-    }
-    CSVvalues.clear();
-    CSVRowNumber++;
-}
+// void cb2(int , void *)
+// {
+//     QString sql;
+//     if (CSVRowNumber == 1)
+//     {
+//         sql = "CREATE TABLE data (";
+//         numColumns = 0;
+//         for (int pos = 0; pos <= CSVvalues.count()-1;pos++)
+//         {
+//             numColumns++;
+//             QString columnName;
+//             columnName = fixColumnName(CSVvalues[pos]);
+//             if (isColumnValid(columnName) == false)
+//                 CSVColumError = true;
+//             sql = sql + columnName + " TEXT,";
+//         }
+//         sql = sql.left(sql.length()-1) + ");";
+//         CSVSQLs.append(sql);
+//     }
+//     else
+//     {
+//         sql = "INSERT INTO data VALUES (";
+//         numColumnsInData = 0;
+//         //Using numColumns so avoids more columns than the heading
+//         for (int pos = 0; pos <= numColumns-1;pos++)
+//         {
+//             numColumnsInData++;
+//             sql = sql + "\"" + CSVvalues[pos].replace("\"","") + "\",";
+//         }
+//         //This will fix if a row has less columns than the heading
+//         for (int pos =1; pos <= numColumns-numColumnsInData;pos++)
+//             sql = sql + "\"\"";
+//         sql = sql.left(sql.length()-1) + ");";
+//         CSVSQLs.append(sql);
+//     }
+//     CSVvalues.clear();
+//     CSVRowNumber++;
+// }
 
 int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase database)
 {    
@@ -1339,6 +1339,7 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
     pasteProcess.start();
     CSVColumError = false;
     pasteProcess.waitForFinished();
+    CSVSQLs.clear();
     if (pasteProcess.exitCode() == 0)
     {
         QString columns_str = pasteProcess.readAllStandardOutput();
