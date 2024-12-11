@@ -1363,6 +1363,7 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
 
         QProcess CSVToJSON;
         QStringList args;
+        args.append("--no-inference");
         args.append(fileName);
         CSVToJSON.setProgram("csvjson");
         CSVToJSON.setArguments(args);
