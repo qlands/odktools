@@ -1401,7 +1401,9 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
         }
         else
         {
-            log("Failed to convert CSV to JSON for file " + fileName);
+            QString StandardError(CSVToJSON.readAllStandardError());
+            QString StandardOutput(CSVToJSON.readAllStandardOutput());
+            log("Failed to convert CSV to JSON for file " + fileName + "-" + StandardError + "-" + StandardOutput + QString::number(CSVToJSON.exitCode()));
             return 1;
         }
     }
