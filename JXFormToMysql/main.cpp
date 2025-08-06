@@ -46,7 +46,6 @@ License along with JXFormToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QUuid>
-#include <QProcess>
 
 //*******************************************Global variables***********************************************
 bool debug;
@@ -159,6 +158,7 @@ struct fieldDef
   QString selectListName; //The list name of the select
   bool sensitive;
   int selectType=0;
+  int formshare_word_selector =0;
   QString externalFileName;
   QString codeColumn;
   QString descColumn;
@@ -238,6 +238,7 @@ struct tableDef
   bool isLoop;
   bool isOSM;
   bool isGroup;
+  bool isFormShareWordSelector = false;
   bool hasOther = false;
   QString lookupCSV;
 };
@@ -1245,12 +1246,12 @@ void report_file_error(QString file_name)
     log(XMLResult.toString());
 }
 
-// void cb1(void *s, size_t, void *)
-// {
-//     char* charData;
-//     charData = (char*)s;
-//     CSVvalues.append(QString::fromUtf8(charData));
-// }
+void cb1(void *s, size_t, void *)
+{
+    char* charData;
+    charData = (char*)s;
+    CSVvalues.append(QString::fromUtf8(charData));
+}
 
 QString fixColumnName(QString column)
 {
@@ -1275,189 +1276,90 @@ bool isColumnValid(QString column)
     }
 }
 
-// void cb2(int , void *)
-// {
-//     QString sql;
-//     if (CSVRowNumber == 1)
-//     {
-//         sql = "CREATE TABLE data (";
-//         numColumns = 0;
-//         for (int pos = 0; pos <= CSVvalues.count()-1;pos++)
-//         {
-//             numColumns++;
-//             QString columnName;
-//             columnName = fixColumnName(CSVvalues[pos]);
-//             if (isColumnValid(columnName) == false)
-//                 CSVColumError = true;
-//             sql = sql + columnName + " TEXT,";
-//         }
-//         sql = sql.left(sql.length()-1) + ");";
-//         CSVSQLs.append(sql);
-//     }
-//     else
-//     {
-//         sql = "INSERT INTO data VALUES (";
-//         numColumnsInData = 0;
-//         //Using numColumns so avoids more columns than the heading
-//         for (int pos = 0; pos <= numColumns-1;pos++)
-//         {
-//             numColumnsInData++;
-//             sql = sql + "\"" + CSVvalues[pos].replace("\"","") + "\",";
-//         }
-//         //This will fix if a row has less columns than the heading
-//         for (int pos =1; pos <= numColumns-numColumnsInData;pos++)
-//             sql = sql + "\"\"";
-//         sql = sql.left(sql.length()-1) + ");";
-//         CSVSQLs.append(sql);
-//     }
-//     CSVvalues.clear();
-//     CSVRowNumber++;
-// }
-
-int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase database)
-{    
-    QFileInfo fi(fileName);
-
-    QProcess csvcutProcess;
-    QProcess awkProcess;
-    QProcess pasteProcess;
-
-    csvcutProcess.setProgram("csvcut");
-    csvcutProcess.setArguments({"-n", fileName});
-
-    awkProcess.setProgram("awk");
-    awkProcess.setArguments({"-F: ", "NR >= 1 {print $2}"});
-
-    pasteProcess.setProgram("paste");
-    pasteProcess.setArguments({"-sd", "|"});
-
-    csvcutProcess.setStandardOutputProcess(&awkProcess);
-    awkProcess.setStandardOutputProcess(&pasteProcess);
-
-    csvcutProcess.start();
-    awkProcess.start();
-    pasteProcess.start();
-    CSVColumError = false;
-    pasteProcess.waitForFinished();
-    CSVSQLs.clear();
-    if (pasteProcess.exitCode() == 0)
+void cb2(int , void *)
+{
+    QString sql;
+    if (CSVRowNumber == 1)
     {
-        QString columns_str = pasteProcess.readAllStandardOutput();
-        columns_str = columns_str.replace("\n","");
-
-        QStringList columns = columns_str.split("|");
-        QString sql = "CREATE TABLE data (";
-        for (int pos = 0; pos < columns.count();pos++)
+        sql = "CREATE TABLE data (";
+        numColumns = 0;
+        for (int pos = 0; pos <= CSVvalues.count()-1;pos++)
         {
+            numColumns++;
             QString columnName;
-            columnName = fixColumnName(columns[pos]);
+            columnName = fixColumnName(CSVvalues[pos]);
             if (isColumnValid(columnName) == false)
                 CSVColumError = true;
             sql = sql + columnName + " TEXT,";
         }
         sql = sql.left(sql.length()-1) + ");";
         CSVSQLs.append(sql);
-
-        QString jsonFile = fi.baseName();
-        jsonFile = tempDirectory.absolutePath() + tempDirectory.separator() + jsonFile + ".json";
-
-        QProcess CSVToJSON;
-        QStringList args;
-        args.append("--no-inference");
-        args.append(fileName);
-        CSVToJSON.setProgram("csvjson");
-        CSVToJSON.setArguments(args);
-        CSVToJSON.setStandardOutputFile(jsonFile);
-        CSVToJSON.start();
-        CSVToJSON.waitForFinished();
-        if (CSVToJSON.exitCode() == 0)
-        {
-            QFile JSONFile(jsonFile);
-            if (!JSONFile.open(QIODevice::ReadOnly))
-            {
-                log("Cannot open" + jsonFile);
-                return 1;
-            }
-            QByteArray JSONData = JSONFile.readAll();
-            QJsonDocument JSONDocument;
-            JSONDocument = QJsonDocument::fromJson(JSONData);
-            QJsonArray firstObject = JSONDocument.array();
-            if (!firstObject.isEmpty())
-            {
-                for(int tmp=0; tmp < firstObject.count(); tmp++)
-                {
-                    sql = "INSERT INTO data VALUES (";
-                    QJsonObject obj = firstObject[tmp].toObject();
-                    for (int pos = 0; pos < columns.count();pos++)
-                    {
-                        QString columnValue;
-                        columnValue = obj.value(columns[pos]).toString();
-                        sql = sql + "\"" + columnValue.replace("\"","") + "\",";
-                    }
-                    sql = sql.left(sql.length()-1) + ");";
-                    CSVSQLs.append(sql);
-                }
-            }
-        }
-        else
-        {
-            QString StandardError(CSVToJSON.readAllStandardError());
-            QString StandardOutput(CSVToJSON.readAllStandardOutput());
-            log("Failed to convert CSV to JSON for file " + fileName + "-" + StandardError + "-" + StandardOutput + QString::number(CSVToJSON.exitCode()));
-            return 1;
-        }
     }
     else
     {
-        log("Failed to read csv columnns in file " + fileName);
+        sql = "INSERT INTO data VALUES (";
+        numColumnsInData = 0;
+        //Using numColumns so avoids more columns than the heading
+        for (int pos = 0; pos <= numColumns-1;pos++)
+        {
+            numColumnsInData++;
+            sql = sql + "\"" + CSVvalues[pos].replace("\"","") + "\",";
+        }
+        //This will fix if a row has less columns than the heading
+        for (int pos =1; pos <= numColumns-numColumnsInData;pos++)
+            sql = sql + "\"\"";
+        sql = sql.left(sql.length()-1) + ");";
+        CSVSQLs.append(sql);
+    }
+    CSVvalues.clear();
+    CSVRowNumber++;
+}
+
+int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase database)
+{    
+    FILE *fp;
+    struct csv_parser p;
+    char buf[4096];
+    size_t bytes_read;
+    size_t retval;
+    unsigned char options = 0;
+
+    if (csv_init(&p, CSV_STRICT) != 0)
+    {
+        log("Failed to initialize csv parser");
         return 1;
     }
-
-    // Start of replacement
-
-    // FILE *fp;
-    // struct csv_parser p;
-    // char buf[4096];
-    // size_t bytes_read;
-    // size_t retval;
-    // unsigned char options = 0;
-
-    // if (csv_init(&p, CSV_STRICT) != 0)
-    // {
-    //     log("Failed to initialize csv parser");
-    //     return 1;
-    // }
-    // fp = fopen(fileName.toUtf8().constData(), "rb");
-    // if (!fp)
-    // {
-    //     log("Failed to open CSV file " + fileName);
-    //     return 0;
-    // }
-    // options = CSV_APPEND_NULL;
-    // csv_set_opts(&p, options);
-    // CSVColumError = false;
-    // CSVRowNumber = 1;
-    // CSVvalues.clear();
-    // CSVSQLs.clear();
-    // while ((bytes_read=fread(buf, 1, 4096, fp)) > 0)
-    // {
-    //     if ((retval = csv_parse(&p, buf, bytes_read, cb1, cb2, NULL)) != bytes_read)
-    //     {
-    //         if (csv_error(&p) == CSV_EPARSE)
-    //         {
-    //             log("Malformed data at byte " + QString::number((unsigned long)retval + 1) + " in file " + fileName);
-    //             return 1;
-    //         }
-    //         else
-    //         {
-    //             log("Error \"" + QString::fromUtf8(csv_strerror(csv_error(&p))) + "\" in file " + fileName);
-    //             return 1;
-    //         }
-    //     }
-    // }
-    // fclose(fp);
-    // csv_fini(&p, cb1, cb2, NULL);
-    // csv_free(&p);
+    fp = fopen(fileName.toUtf8().constData(), "rb");
+    if (!fp)
+    {
+        log("Failed to open CSV file " + fileName);
+        return 0;
+    }
+    options = CSV_APPEND_NULL;
+    csv_set_opts(&p, options);
+    CSVColumError = false;
+    CSVRowNumber = 1;
+    CSVvalues.clear();
+    CSVSQLs.clear();
+    while ((bytes_read=fread(buf, 1, 4096, fp)) > 0)
+    {
+        if ((retval = csv_parse(&p, buf, bytes_read, cb1, cb2, NULL)) != bytes_read)
+        {
+            if (csv_error(&p) == CSV_EPARSE)
+            {
+                log("Malformed data at byte " + QString::number((unsigned long)retval + 1) + " in file " + fileName);
+                return 1;
+            }
+            else
+            {
+                log("Error \"" + QString::fromUtf8(csv_strerror(csv_error(&p))) + "\" in file " + fileName);
+                return 1;
+            }
+        }
+    }
+    fclose(fp);
+    csv_fini(&p, cb1, cb2, NULL);
+    csv_free(&p);
 
     if (CSVColumError)
     {
@@ -1470,10 +1372,7 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
         exit(14);
     }
 
-
-    // End of replacement
-
-
+    QFileInfo fi(fileName);
     QString sqlLiteFile;
     sqlLiteFile = fi.baseName();
     sqlLiteFile = tempDirectory.absolutePath() + tempDirectory.separator() + sqlLiteFile + ".sqlite";
@@ -1495,7 +1394,6 @@ int convertCSVToSQLite(QString fileName, QDir tempDirectory, QSqlDatabase databa
         query.exec("BEGIN TRANSACTION");
         for (int pos = 0; pos <= CSVSQLs.count()-1;pos++)
         {
-            //qDebug() << CSVSQLs[pos];
             if (!query.exec(CSVSQLs[pos]))
             {
                 log("Cannot insert data for row: " + QString::number(pos+2) + " in file: " + sqlLiteFile + " reason: " + query.lastError().databaseText());
@@ -2188,6 +2086,7 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
                         }
                         fieldNode.setAttribute("size",tables[pos].fields[clm].size);
                         fieldNode.setAttribute("decsize",tables[pos].fields[clm].decSize);
+                        fieldNode.setAttribute("formshare_word_selector",tables[pos].fields[clm].formshare_word_selector);
                         if (tables[pos].fields[clm].isMultiSelect == true)
                         {
                             fieldNode.setAttribute("isMultiSelect","true");
@@ -2234,8 +2133,8 @@ void generateOutputFiles(QString ddlFile,QString insFile, QString metaFile, QStr
                             createFieldNode.setAttribute("protection","exclude");
                         }
                         createFieldNode.setAttribute("size",tables[pos].fields[clm].size);
-                        createFieldNode.setAttribute("decsize",tables[pos].fields[clm].decSize);                        
-
+                        createFieldNode.setAttribute("decsize",tables[pos].fields[clm].decSize);
+                        fieldNode.setAttribute("formshare_word_selector",tables[pos].fields[clm].formshare_word_selector);
                         if (tables[pos].fields[clm].isMultiSelect == true)
                         {
                             createFieldNode.setAttribute("isMultiSelect","true");
@@ -4534,6 +4433,50 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
 //                    }
                 }
 
+            }
+            if (fieldObject.keys().indexOf("control") >= 0)
+            {
+                QString appearance;
+                appearance = fieldObject.value("control").toObject().value("appearance").toString();
+                if (appearance.indexOf("formshareteach("))
+                {
+                    aField.formshare_word_selector = 1;
+                    TtableDef wordListTable;
+                    wordListTable.isLoop = false;
+                    wordListTable.isOSM = false;
+                    wordListTable.isGroup = false;
+                    wordListTable.name =  fixField(tables[tblIndex].name, true) + + "_words_" + fixField(variableName.toLower(), true);
+                    wordListTable.islookup = false;
+                    tableIndex++;
+                    wordListTable.pos = tableIndex;
+                    wordListTable.parentTable = tables[tblIndex].name;
+                    wordListTable.xmlCode = "NONE";
+
+                    // Add the word field
+                    TfieldDef wordField;
+                    wordField.name = "word";
+                    wordField.selectSource = "NONE";
+                    wordField.selectListName = "NONE";
+                    wordField.desc.append(aField.desc);
+                    wordField.key = true;
+                    wordField.type = "varchar";
+                    wordField.size = 255;
+                    wordField.decSize = 0;
+                    wordListTable.fields.append(wordField);
+
+                    TfieldDef wordSelectedField;
+                    wordSelectedField.name = "wordselected";
+                    wordSelectedField.selectSource = "NONE";
+                    wordSelectedField.selectListName = "NONE";
+                    wordSelectedField.desc.append(aField.desc);
+                    wordSelectedField.key = false;
+                    wordSelectedField.type = "int";
+                    wordSelectedField.size = 1;
+                    wordSelectedField.decSize = 0;
+                    wordListTable.fields.append(wordSelectedField);
+
+                    tables.append(wordListTable);
+                }
             }
         }
 
@@ -6981,7 +6924,6 @@ int main(int argc, char *argv[])
     title = title + " * 36: Multi-selects have spaces in column name.                       * \n";
     title = title + " *                                                                     * \n";
     title = title + " * XML = XML oputput is available.                                     * \n";
-    title = title + " * Note: This tool requires CSVKit (sudo apt-get install csvkit)       * \n";
     title = title + " ********************************************************************* \n";
 
     TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
