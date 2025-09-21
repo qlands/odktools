@@ -1169,8 +1169,10 @@ void mergeCreate::compareTables(QDomNode table,QDomDocument &docB)
                 errorList.append(error);
             }
             if (newTables.indexOf(parentTableName) < 0)
+            {
                 addTableToSDiff(eTable,false);
-            parentfound.appendChild(table.cloneNode(true));
+                parentfound.appendChild(table.cloneNode(true));
+            }
         }
         else
         {
