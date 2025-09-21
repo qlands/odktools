@@ -1139,8 +1139,14 @@ void mergeCreate::compareTables(QDomNode table,QDomDocument &docB)
         QString parentTableName;
         parentTableName = table.parentNode().toElement().attribute("name","");
         parentfound = findTable(docB,parentTableName);
-        if (!parentfound.isNull())
+
+        //qDebug() << eTable.toElement().attribute("name","") + "-A";
+        //qDebug() << parentTableName + "-A";
+        //qDebug() << newTables;
+        // If the parent if found or the parent is also a new table
+        if (!parentfound.isNull() || newTables.indexOf(parentTableName) >= 0)
         {
+            newTables.append(eTable.toElement().attribute("name",""));
             QDomNode field = table.firstChild();
             while (!field.isNull())
             {
@@ -1162,7 +1168,8 @@ void mergeCreate::compareTables(QDomNode table,QDomDocument &docB)
                 error.to = eTable.toElement().attribute("name","");
                 errorList.append(error);
             }
-            addTableToSDiff(eTable,false);
+            if (newTables.indexOf(parentTableName) < 0)
+                addTableToSDiff(eTable,false);
             parentfound.appendChild(table.cloneNode(true));
         }
         else

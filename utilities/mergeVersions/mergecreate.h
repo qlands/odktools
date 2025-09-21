@@ -87,6 +87,7 @@ private:
     QList<TreplaceRef> create_lookup_rels;
     QStringList dropped_rels;
     QStringList newFields;
+    QStringList newTables;
     void addAlterFieldToDiff(QString table, QDomElement eField, int newSize, int newDec, bool islookup);
     void ddTableToDrop(QString name);
     void changeLookupRelationship(QString table, QDomElement a, QDomElement b, bool islookup);
