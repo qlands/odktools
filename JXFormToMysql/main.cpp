@@ -4452,6 +4452,33 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     wordListTable.parentTable = tables[tblIndex].name;
                     wordListTable.xmlCode = "NONE";
 
+                    //The wordlist table is a child of the current table thus pass the keyfields
+                    for (int field = 0; field < tables[tblIndex].fields.count();field++)
+                    {
+                        if (tables[tblIndex].fields[field].key == true)
+                        {
+                            TfieldDef relField;
+                            relField.selectSource = "NONE";
+                            relField.selectListName = "NONE";
+                            relField.name = tables[tblIndex].fields[field].name;
+                            relField.desc.append(tables[tblIndex].fields[field].desc);
+                            relField.type = tables[tblIndex].fields[field].type;
+                            relField.size = tables[tblIndex].fields[field].size;
+                            relField.decSize = tables[tblIndex].fields[field].decSize;
+                            relField.key = true;
+                            relField.sensitive = false;
+                            relField.rTable = tables[tblIndex].name;
+                            relField.rField = tables[tblIndex].fields[field].name;
+                            relField.rName = getUUIDCode();
+                            relField.xmlCode = "NONE";
+                            relField.isMultiSelect = false;
+                            relField.formula = "";
+                            relField.calculateWithSelect = false;
+                            relField.multiSelectTable = "";
+                            wordListTable.fields.append(relField);
+                        }
+                    }
+
                     // Add the word field
                     TfieldDef wordField;
                     wordField.name = "word";
@@ -4462,6 +4489,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     wordField.type = "varchar";
                     wordField.size = 255;
                     wordField.decSize = 0;
+                    wordField.sensitive = false;
                     wordListTable.fields.append(wordField);
 
                     TfieldDef wordSelectedField;
@@ -4473,6 +4501,7 @@ void parseField(QJsonObject fieldObject, QString mainTable, QString mainField, Q
                     wordSelectedField.type = "int";
                     wordSelectedField.size = 1;
                     wordSelectedField.decSize = 0;
+                    wordField.sensitive = false;
                     wordListTable.fields.append(wordSelectedField);
 
                     tables.append(wordListTable);
