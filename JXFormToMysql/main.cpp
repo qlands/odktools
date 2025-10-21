@@ -7430,6 +7430,6 @@ int main(int argc, char *argv[])
     if (logXMLError)
         log(XMLResult.toString());
 
-    qDebug() << "Finished";
+    //qDebug() << "Finished";
     return 0;
 }
