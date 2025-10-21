@@ -1,8 +1,7 @@
 /*
-XMLToJSON
+XMLToJSON 3.0
 
-Copyright (C) 2018 QLands Technology Consultants.
-Author: Carlos Quiros (cquiros_at_qlands.com / c.f.quiros_at_cgiar.org)
+Copyright (c) 2025 QLands Inc.
 
 XMLToJSON is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
@@ -16,6 +15,9 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with XMLToJSON.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+This code is based on XMLToJSON 1.0 CopyRight ILRI
+
 */
 
 #include <QCoreApplication>
@@ -269,7 +271,7 @@ int main(int argc, char *argv[])
     title = title + " * to use software like FormShare or FormHub.                        * \n";
     title = title + " ********************************************************************* \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "3.0");
 
     TCLAP::ValueArg<std::string> xmlArg("i","xml","Input XML File",true,"","string");
     TCLAP::ValueArg<std::string> jsonArg("o","json","Input JSON File",false,"","string");

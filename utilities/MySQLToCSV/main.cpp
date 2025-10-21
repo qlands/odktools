@@ -1,29 +1,30 @@
+/*
+MySQLToCSV 3.0
+
+Copyright (c) 2025 QLands Inc.
+
+MySQLToCSV is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+MySQLToCSV is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with MySQLToCSV.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+*/
+
+
 #include <QCoreApplication>
 #include <tclap/CmdLine.h>
 #include <QTimer>
 #include "mainclass.h"
 #include <QTime>
 #include <QRandomGenerator>
-
-/*
-MySQLToCSV
-
-Copyright (C) 2022 QLands Technology Consultants.
-Author: Carlos Quiros (cquiros_at_qlands.com / c.f.quiros_at_cgiar.org)
-
-MySQLToXLSX is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as
-published by the Free Software Foundation, either version 3 of
-the License, or (at your option) any later version.
-
-MySQLToXLSX is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with MySQLToXLSX.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
-*/
 
 QString getRandomHex(const int &length)
 {
@@ -59,7 +60,7 @@ int main(int argc, char *argv[])
     title = title + " * exported due to the sensitivity of its information.                 * \n";
     title = title + " *********************************************************************** \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().data(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().data(), ' ', "3.0");
     //Required arguments
     TCLAP::ValueArg<std::string> hostArg("H","host","MySQL host. Default localhost",false,"localhost","string");
     TCLAP::ValueArg<std::string> portArg("P","port","MySQL port. Default 3306.",false,"3306","string");

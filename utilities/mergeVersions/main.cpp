@@ -1,22 +1,23 @@
 /*
-Merge Versions
+mergeVersions 3.0
 
-Copyright (C) 2019 QLands Technology Consultants.
-Author: Carlos Quiros (cquiros_at_qlands.com)
+Copyright (c) 2025 QLands Inc.
 
-Merge Versions is free software: you can redistribute it and/or modify
+mergeVersions is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
 published by the Free Software Foundation, either version 3 of
 the License, or (at your option) any later version.
 
-Merge Versions is distributed in the hope that it will be useful,
+mergeVersions is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with Merge Versions.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+License along with mergeVersions.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
 */
+
 
 #include <QCoreApplication>
 #include <QTimer>
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
 
     QString title;
     title = title + "************************************************************************ ";
-    title = title + " * Merge Versions. Version 2.0                                          * ";
+    title = title + " * Merge Versions. Version 3.0                                          * ";
     title = title + " * This tool merges two versions of an ODK (A & B) using the XML        * ";
     title = title + " * files created by JXFormToMySQL (create.xml and insert.xml).          * ";
     title = title + " *                                                                      * ";
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     title = title + " * losing data between versions.                                        * ";
     title = title + " ************************************************************************ ";
 
-    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "3.0");
 
     TCLAP::ValueArg<std::string> aArg("a","inputa","Input create XML file A (later)",true,"","string");
     TCLAP::ValueArg<std::string> bArg("b","inputb","Input create XML file B (former)",true,"","string");

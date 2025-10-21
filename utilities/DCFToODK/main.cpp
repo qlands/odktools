@@ -1,3 +1,23 @@
+/*
+DCFToODK
+
+Copyright (c) 2025 QLands Inc.
+
+DCFToODK is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+DCFToODK is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with DCFToODK.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+*/
+
+
 #include <tclap/CmdLine.h>
 #include <QtCore>
 #include "dcftoxml.h"
@@ -27,7 +47,7 @@ int main(int argc, char *argv[])
     title = title + " * https://github.com/Sjlver/yxf                                     * \n";
     title = title + " ********************************************************************* \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "3.0");
 
     TCLAP::ValueArg<std::string> inputArg("i","input","Input DCF file",true,"","string");
     TCLAP::ValueArg<std::string> outputArg("o","output","Output YAML file",true,"","string");

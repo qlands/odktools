@@ -1,21 +1,23 @@
 /*
-InsertFromXML
+insertFromXML 3.0
 
-Copyright (C) 2015-2017 International Livestock Research Institute.
-Author: Carlos Quiros (cquiros_at_qlands.com / c.f.quiros_at_cgiar.org)
+Copyright (c) 2025 QLands Inc.
 
-InsertFromXML is free software: you can redistribute it and/or modify
+insertFromXML is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
 published by the Free Software Foundation, either version 3 of
 the License, or (at your option) any later version.
 
-InsertFromXML is distributed in the hope that it will be useful,
+insertFromXML is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
-License along with InsertFromXML.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+License along with insertFromXML.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+This code is based on insertFromXML 1.0 Copyright ILRI
+
 */
 
 #include <tclap/CmdLine.h>
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
     title = title + " * compareInsertXML.                                                 * \n";
     title = title + " ********************************************************************* \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "3.0");
 
     TCLAP::ValueArg<std::string> inputArg("i","input","Input insert XML file",true,"","string");
     TCLAP::ValueArg<std::string> outputArg("o","output","Output SQL file",false,"./insert.sql","string");

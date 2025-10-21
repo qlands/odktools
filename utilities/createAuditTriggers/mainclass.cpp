@@ -1,4 +1,4 @@
-#include "mainclass.h"
+#include <mainclass.h>
 #include <QDir>
 #include <QSqlQuery>
 #include <QTextStream>

@@ -8,10 +8,9 @@
 #endif
 
 /*
-createTemporaryTable
+createTemporaryTable 3.0
 
-Copyright (C) 2021 QLands Technology Consultants.
-Author: Carlos Quiros (cquiros_at_qlands.com / c.f.quiros_at_cgiar.org)
+Copyright (c) 2025 QLands Inc.
 
 createTemporaryTable is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
@@ -25,6 +24,9 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with createTemporaryTable.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+This code is based on createTemporaryTable 1.0 Copyright ILRI
+
 */
 
 QString getRandomHex(const int &length)
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
     title = title + " * determine the type of data to be exported.                          * \n";
     title = title + " *********************************************************************** \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().data(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().data(), ' ', "3.0");
     //Required arguments
     TCLAP::ValueArg<std::string> hostArg("H","host","MySQL host. Default localhost",false,"localhost","string");
     TCLAP::ValueArg<std::string> portArg("P","port","MySQL port. Default 3306.",false,"3306","string");

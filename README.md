@@ -365,7 +365,7 @@ Installation instructions for Ubuntu Server 16.04 or 18.04 are available [here](
 
 
 ## Author
-Carlos Quiros (cquiros_at_qlands.com / c.f.quiros_at_cgiar.org)
+Carlos Quiros (cquiros_at_qlands.com)
 
 ## License
 This repository contains the code of:
@@ -373,4 +373,4 @@ This repository contains the code of:
 - [TClap](http://tclap.sourceforge.net/) which is licensed under the [MIT license](https://raw.githubusercontent.com/twbs/bootstrap/master/LICENSE).
 - [MongoDB C++ Driver](https://mongodb.github.io/mongo-cxx-driver/) which is licensed under the [Apache License, version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-Otherwise, ODKTools is licensed under [LGPL V3](http://www.gnu.org/licenses/lgpl-3.0.html).
+Otherwise, ODKTools is licensed under [LGPL V3](http://www.gnu.org/licenses/lgpl-3.0.html)

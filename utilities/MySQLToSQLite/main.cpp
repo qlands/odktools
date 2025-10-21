@@ -1,8 +1,7 @@
 /*
 MySQLToSQlite
 
-Copyright (C) 2019 QLands Technology Consultants.
-Author: Carlos Quiros (cquiros_at_qlands.com)
+Copyright (c) 2025 QLands Inc.
 
 MySQLToSQLite is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
@@ -432,10 +431,9 @@ int main(int argc, char *argv[])
     title = title + " * This tool generates a SQLite file from a MySQL schema.         * \n";
     title = title + " * The tool relies on MySQLDump, sqlite3 to convert a MySQL       * \n";
     title = title + " * XML dump file into a sqlite database.                          * \n";
-    title = title + " * (c) QLands, 2019                                               * \n";
     title = title + " ****************************************************************** \n";
 
-    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "2.0");
+    TCLAP::CmdLine cmd(title.toUtf8().constData(), ' ', "3.0");
     //Required arguments
     TCLAP::ValueArg<std::string> hostArg("H","host","MySQL Host. Default localhost",false,"localhost","string");
     TCLAP::ValueArg<std::string> portArg("P","port","MySQL Port. Default 3306",false,"3306","string");
