@@ -35,6 +35,7 @@ struct relatedTable
 {
     QString name;
     QString relName;
+    QString on_delete = "CASCADE";
     QList< TrelatedField> fields;
 };
 typedef relatedTable TrelatedTable;
@@ -163,6 +164,7 @@ void createTable(QString tableName,QList<QDomNode> fields,QTextStream &outstrm, 
                     TrelatedTable relTable;
                     relTable.name = efield.attribute("rtable","");
                     relTable.relName = efield.attribute("rname","");
+                    relTable.on_delete = efield.attribute("on_delete","CASCADE");
 
                     TrelatedField relfield;
                     relfield.name = efield.attribute("name","");
@@ -185,7 +187,7 @@ void createTable(QString tableName,QList<QDomNode> fields,QTextStream &outstrm, 
         rels << "FOREIGN KEY (" + getFields(relTables[pos]) + ")" << "\n";
         rels << "REFERENCES " + relTables[pos].name + " (" + getRelatedFields(relTables[pos]) + ")" << "\n";
 
-        rels << "ON DELETE CASCADE " << "\n";
+        rels << "ON DELETE " + relTables[pos].on_delete << "\n";
         rels << "ON UPDATE NO ACTION," << "\n";
 
     }
