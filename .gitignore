@@ -21,6 +21,7 @@
 *.*#
 core
 !core/
+.idea/
 tags
 .DS_Store
 *.debug

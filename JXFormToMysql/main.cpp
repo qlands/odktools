@@ -6938,6 +6938,7 @@ void protect_sensitive()
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication app(argc, argv);
     QString title;
     title = title + "********************************************************************* \n";
     title = title + " * JSON XForm To MySQL                                                 * \n";
