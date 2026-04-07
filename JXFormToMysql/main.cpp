@@ -26,12 +26,12 @@ License along with JXFormToMySQL.  If not, see <http://www.gnu.org/licenses/lgpl
 #include <QDomComment>
 #include <QDirIterator>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-#include <QuaZip-Qt6-1.4/quazip/quazip.h>
-#include <QuaZip-Qt6-1.4/quazip/quazipfile.h>
+#include <QuaZip-Qt6-1.5/quazip/quazip.h>
+#include <QuaZip-Qt6-1.5/quazip/quazipfile.h>
 #include <QRegExp>
 #else
-#include <QuaZip-Qt5-1.4/quazip/quazip.h>
-#include <QuaZip-Qt5-1.4/quazip/quazipfile.h>
+#include <QuaZip-Qt5-1.5/quazip/quazip.h>
+#include <QuaZip-Qt5-1.5/quazip/quazipfile.h>
 #endif
 #include <QDomDocument>
 #include <csv.h>
