@@ -1,0 +1,75 @@
+**Note on AI-Assisted Refactoring and LGPL/GPL Derivative Works**
+
+This note clarifies how software licensed under the GNU Lesser General Public License (LGPL) and GNU General Public License (GPL) applies to code generated through AI-assisted refactoring, translation, or reimplementation.
+
+**1. Derivative Works and Non-Literal Transformation**
+
+Both LGPL and GPL are based on copyright law, which protects not only literal code copying but also the **structure, sequence, and organization** of a program.
+
+A work may be considered **derivative** even if:
+
+* No original lines of code are copied
+* The code is rewritten in a different programming language (e.g., C++ to Python)
+* The implementation is newly generated (including by AI)
+
+If the resulting code reproduces the original program’s **architecture, logic, workflows, or design**, it still qualify as a derivative work.
+
+---
+
+**2. AI-Assisted Refactoring**
+
+When an AI system is used to:
+
+* Analyze LGPL/GPL-licensed source code
+* Understand its functionality and internal design
+* Generate a new implementation based on that understanding
+
+the resulting code is considered a **translation or transformation** of the original work.
+
+Under prevailing interpretations of LGPL/GPL:
+
+* AI-assisted rewrites are treated similarly to **human rewrites**
+* The method of creation (AI vs human) does **not change** the derivative work analysis
+
+---
+
+**3. Licensing Implications**
+
+If the AI-generated code is determined to be a derivative work:
+
+* Under the GPL:
+  The resulting code must be licensed under GPL if distributed.
+
+* Under the LGPL:
+  The resulting code may need to comply with LGPL requirements, particularly if it incorporates or replicates protected elements of the original library implementation.
+
+---
+
+**4. Independent Implementations**
+
+AI-generated code may **not** be considered derivative if it is created from:
+
+* High-level specifications
+* Public documentation
+* Functional descriptions
+* Observed behavior (without access to source code)
+
+and does **not replicate the protected structure or implementation details** of the original program.
+
+This is analogous to a **clean-room implementation**, where:
+
+* One process defines the specification
+* Another independently implements it without exposure to the original code
+
+In such cases, LGPL/GPL obligations typically do **not** apply.
+
+---
+
+**5. Key Determining Factor**
+
+The central question is:
+
+> Was the new implementation derived from the original code’s expression, or independently created from its underlying ideas?
+
+If the AI system had access to and relied on the original LGPL/GPL code to generate the new implementation, it is considered **derivative**.
+
